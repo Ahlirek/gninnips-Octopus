@@ -1,4 +1,5 @@
-import "./Button.css";
+import styles from "./Button.module.css";
+
 export default function Button({
   imgSrc,
   emoji,
@@ -16,18 +17,18 @@ export default function Button({
 }) {
   return (
     <button
-      className="image-button"
+      className={styles.imageButton}
       onClick={onClick}
       disabled={disabled}
       aria-label={altText}
     >
       {imgSrc ? (
-        <img src={imgSrc} alt={altText} className="button-image" />
+        <img src={imgSrc} alt={altText} className={styles.buttonImage} />
       ) : emoji ? (
-        <span className="button-emoji">{emoji}</span>
+        <span className={styles.buttonEmoji}>{emoji}</span>
       ) : null}
 
-      {buttonText && <span className="button-text">{buttonText}</span>}
+      {buttonText && <span className={styles.buttonText}>{buttonText}</span>}
     </button>
   );
 }

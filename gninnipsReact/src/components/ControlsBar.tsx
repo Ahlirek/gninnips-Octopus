@@ -1,6 +1,6 @@
 import Button from "./Button.tsx";
 import NumberInputButton from "./NumberInputButton.tsx";
-import "./ControlsBar.css";
+import styles from "./ControlsBar.module.css";
 
 export default function ControlsBar() {
   const IMAGES_LENGTH = 10;
@@ -63,7 +63,7 @@ export default function ControlsBar() {
   });
 
   return (
-      <div className="button-grid">
+      <div className={styles.buttonGrid}>
         {buttonConfigs.map((el, index) => {
           if (el.type === "numberInput") {
             return (

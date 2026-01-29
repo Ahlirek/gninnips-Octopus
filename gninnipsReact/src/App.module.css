@@ -1,4 +1,4 @@
-.app-container {
+.appContainer {
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -6,15 +6,15 @@
     overflow: hidden;
 }
 
-.upper-section {
+.upperSection {
     display: flex; 
-    flex: 2;
+    flex: 1;
     min-height: 0;
     overflow: hidden;
 
 }
 
-.config-panel{
+.configPanel{
     display: flex;
     flex: 1;
     padding: 1.5rem;
@@ -23,22 +23,17 @@
     min-width: 250px;
 }
 
-.preview-area{
+.previewArea{
     display: flex;
     flex: 3;
     padding: 1.5rem;
     flex-shrink: 0; 
 }
 
-.controls-bar {
+.controlsBar {
     display: flex;
-    flex: 1;
     align-items: center;
     border-top: 1px solid #1a252f;
     padding: 1.5rem;
-    min-height: 140px;
-    max-height: 160px;
-    flex-shrink: 0; 
 }
-
 
