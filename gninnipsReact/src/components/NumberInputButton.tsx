@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
-import styles from "./NumberInputButton.module.css"
-import stylesButton from "./Button.module.css"
+import { useState, useEffect, useRef } from 'react';
+import styles from './NumberInputButton.module.css';
+import stylesButton from './Button.module.css';
 
 export default function NumberInputButton({
-  buttonText = "Submit",
-  placeholder = "Enter value",
+  buttonText = 'Submit',
+  placeholder = 'Enter value',
   onSubmit,
 }: {
   buttonText?: string;
@@ -12,28 +12,28 @@ export default function NumberInputButton({
   onSubmit: (value: number) => void;
   cancelText?: string;
 }) {
-  const [value, setValue] = useState<string>("");
+  const [value, setValue] = useState<string>('');
   const [isInputVisible, setIsInputVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState<string>('');
 
   const minValue = 2;
   const maxValue = 100;
 
   const validateInput = (num: number): boolean => {
     if (isNaN(num)) {
-      setError("Please enter a valid number");
+      setError('Por favor ingresa un número valido');
       return false;
     }
     if (minValue !== undefined && num < minValue) {
-      setError(`Value must be at least ${minValue}`);
+      setError(`Ingresa un valor mayor a ${minValue}`);
       return false;
     }
     if (maxValue !== undefined && num > maxValue) {
-      setError(`Value must be at most ${maxValue}`);
+      setError(`Ingresa un valor menor a ${maxValue}`);
       return false;
     }
-    setError("");
+    setError('');
     return true;
   };
 
@@ -41,21 +41,21 @@ export default function NumberInputButton({
     const numValue = parseInt(value);
     if (validateInput(numValue)) {
       onSubmit(numValue);
-      setValue("");
+      setValue('');
       setIsInputVisible(false);
-      setError("");
+      setError('');
     }
   };
 
   const handleCancel = () => {
-    setValue("");
+    setValue('');
     setIsInputVisible(false);
-    setError("");
+    setError('');
   };
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       handleSubmit();
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       handleCancel();
     }
   };
@@ -71,9 +71,9 @@ export default function NumberInputButton({
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isInputVisible]);
 
@@ -88,11 +88,11 @@ export default function NumberInputButton({
             value={value}
             onChange={(e) => {
               setValue(e.target.value);
-              setError("");
+              setError('');
             }}
             onKeyDown={handleKeyPress}
             placeholder={placeholder}
-            className={`${styles.numberInput} ${error ? styles.error : ""}`}
+            className={`${styles.numberInput} ${error ? styles.error : ''}`}
             autoFocus
           />
           {error && <div className={styles.errorMessage}>{error}</div>}
@@ -113,7 +113,6 @@ export default function NumberInputButton({
               ❌
             </button>
           </div>
-
         </div>
       ) : (
         <button
@@ -121,8 +120,10 @@ export default function NumberInputButton({
           onClick={() => setIsInputVisible(true)}
           aria-label="Open number input"
         >
-          <span className={stylesButton.buttonEmoji}>X</span>
-          {buttonText && <span className={stylesButton.buttonText}>{buttonText}</span>}
+          <span className={stylesButton.buttonEmoji}>X❓</span>
+          {buttonText && (
+            <span className={stylesButton.buttonText}>{buttonText}</span>
+          )}
         </button>
       )}
     </div>

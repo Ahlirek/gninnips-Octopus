@@ -1,10 +1,10 @@
-import styles from "./Button.module.css";
+import styles from './Button.module.css';
 
 export default function Button({
   imgSrc,
   emoji,
-  altText = "button image",
-  buttonText = "",
+  altText = 'Image Button',
+  buttonText = '',
   onClick,
   disabled = false,
 }: {

@@ -1,6 +1,6 @@
-import Button from "./Button.tsx";
-import NumberInputButton from "./NumberInputButton.tsx";
-import styles from "./ControlsBar.module.css";
+import Button from './Button.tsx';
+import NumberInputButton from './NumberInputButton.tsx';
+import styles from './ControlsBar.module.css';
 
 export default function ControlsBar() {
   const IMAGES_LENGTH = 10;
@@ -8,17 +8,17 @@ export default function ControlsBar() {
   const NUMBER_INPUT_INDEX = 15;
 
   const emojis = [
-    "⚡",
-    "🔥",
-    "✨",
-    "💎",
-    "🚀",
-    "🎯",
-    "💡",
-    "🔧",
-    "📊",
-    "🎮",
-    "💾",
+    ['␡', 'Borrar'],
+    ['🗑️', 'Limpiar'],
+    ['𝐓', 'Titulo'],
+    ['🗓️', 'Fecha'],
+    ['［ ］', 'Ciclo'],
+    ['⏱️➕', 'Sumatoria Tiempo'],
+    ['', ''],
+    ['⬅️', 'Izquierda'],
+    ['➡️', 'Derecha'],
+    ['📎', 'Cargar Entrenamiento'],
+    ['💾', 'Descargar Imagen'],
   ];
 
   const handleButtonClick = (index: number, type: string) => {
@@ -34,60 +34,59 @@ export default function ControlsBar() {
 
     if (index < IMAGES_LENGTH) {
       return {
-        type: "image" as const,
+        type: 'image' as const,
         imgSrc: `/images/${index + 1}.png`,
-        text: `Training ${index + 1}`,
+        text: `Entrenamiento ${index + 1}`,
         key: `img-${index}`,
       };
     }
 
     if (index === NUMBER_INPUT_INDEX) {
       return {
-        type: "numberInput" as const,
-        text: "Set Value",
-        key: "number-input",
+        type: 'numberInput' as const,
+        text: 'Repeticiones',
+        key: 'number-input',
       };
     }
-      const emojiIndex = Math.max(
-        0,
-        index - IMAGES_LENGTH - (index > NUMBER_INPUT_INDEX ? 1 : 0),
-      );
-      const currentEmoji = emojis[emojiIndex];
+    const emojiIndex = Math.max(
+      0,
+      index - IMAGES_LENGTH - (index > NUMBER_INPUT_INDEX ? 1 : 0),
+    );
+    const currentEmoji = emojis[emojiIndex];
 
-      return {
-        type: "emoji" as const,
-        emoji: currentEmoji,
-        text: `Action ${index}`, // Save actions with emojis in a tuple
-        key: `emoji-${index}`,
-      };
+    return {
+      type: 'emoji' as const,
+      emoji: currentEmoji[0],
+      text: currentEmoji[1],
+      key: `emoji-${index}`,
+    };
   });
 
   return (
-      <div className={styles.buttonGrid}>
-        {buttonConfigs.map((el, index) => {
-          if (el.type === "numberInput") {
-            return (
-              <NumberInputButton
-                key={el.key}
-                buttonText={el.text}
-                placeholder="Enter number"
-                onSubmit={handleNumberInput}
-              />
-            );
-          }
+    <div className={styles.buttonGrid}>
+      {buttonConfigs.map((el, index) => {
+        if (el.type === 'numberInput') {
           return (
-            <Button
+            <NumberInputButton
               key={el.key}
-              imgSrc={el.type === "image" ? el.imgSrc : undefined}
-              emoji={el.type === "emoji" ? el.emoji : undefined}
-              // altText={el.text}
-              altText={`Button ${index + 1}`}
               buttonText={el.text}
-              onClick={() => handleButtonClick(index, el.type)}
+              placeholder="Enter number"
+              onSubmit={handleNumberInput}
             />
           );
-        })}
-      </div>
+        }
+        return (
+          <Button
+            key={el.key}
+            imgSrc={el.type === 'image' ? el.imgSrc : undefined}
+            emoji={el.type === 'emoji' ? el.emoji : undefined}
+            altText={el.text}
+            buttonText={el.text}
+            onClick={() => handleButtonClick(index, el.type)}
+          />
+        );
+      })}
+    </div>
   );
 }
 

@@ -35,5 +35,6 @@
     align-items: center;
     border-top: 1px solid #1a252f;
     padding: 1.5rem;
+    flex-shrink: 0; 
 }
 
