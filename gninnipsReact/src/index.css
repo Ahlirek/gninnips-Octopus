@@ -17,7 +17,7 @@ body {
   line-height: 1.5;
   background-color: #ffffff;
   color: #000000;
-  overflow: hidden; /* prevents accidental page scroll */
+  overflow: hidden; 
 }
 
 img,
@@ -34,10 +34,24 @@ select,
 textarea {
   font: inherit;
 }
-/* button { */
-/*   background: none; */
-/*   border: none; */
-/* } */
-/**/
-/**/
+
+button {
+  background: none;
+  border: none;
+}
+
+.react-datepicker {
+  border: none !important;
+  font-family: inherit !important;
+}
+
+.react-datepicker__header {
+  background-color: white !important;
+  border-bottom: 1px solid #dee2e6 !important;
+}
+
+.react-datepicker__day--selected {
+  background-color: #007bff !important;
+  border-radius: 4px !important;
+}
 

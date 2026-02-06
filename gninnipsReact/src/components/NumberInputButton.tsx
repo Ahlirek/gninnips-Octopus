@@ -52,7 +52,8 @@ export default function NumberInputButton({
     setIsInputVisible(false);
     setError('');
   };
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSubmit();
     } else if (e.key === 'Escape') {
@@ -90,7 +91,7 @@ export default function NumberInputButton({
               setValue(e.target.value);
               setError('');
             }}
-            onKeyDown={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className={`${styles.numberInput} ${error ? styles.error : ''}`}
             autoFocus

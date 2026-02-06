@@ -1,17 +1,31 @@
+import { useRef } from 'react';
 import Button from './Button.tsx';
 import NumberInputButton from './NumberInputButton.tsx';
 import styles from './ControlsBar.module.css';
 
-export default function ControlsBar() {
+interface ControlsBarProps {
+  onOpenTitleModal?: () => void;
+  onOpenDatePicker?: (buttonReact: DOMRect) => void;
+  onOpenConfirmationModal?: () => void;
+}
+
+export default function ControlsBar({
+  onOpenTitleModal,
+  onOpenDatePicker,
+  onOpenConfirmationModal,
+}: ControlsBarProps) {
   const IMAGES_LENGTH = 10;
   const TOTAL_BUTTONS = 22;
   const NUMBER_INPUT_INDEX = 15;
+  const TITLE_BUTTON_TEXT = 'Titulo';
+  const DATE_BUTTON_TEXT = 'Fecha';
+  const CLEAR_BUTTON_TEXT = 'Limpiar';
 
   const emojis = [
     ['␡', 'Borrar'],
-    ['🗑️', 'Limpiar'],
-    ['𝐓', 'Titulo'],
-    ['🗓️', 'Fecha'],
+    ['🗑️', CLEAR_BUTTON_TEXT],
+    ['𝐓', TITLE_BUTTON_TEXT],
+    ['🗓️', DATE_BUTTON_TEXT],
     ['［ ］', 'Ciclo'],
     ['⏱️➕', 'Sumatoria Tiempo'],
     ['', ''],
@@ -21,8 +35,26 @@ export default function ControlsBar() {
     ['💾', 'Descargar Imagen'],
   ];
 
-  const handleButtonClick = (index: number, type: string) => {
+  const fechaButtonRef = useRef<HTMLButtonElement>(null);
+
+  const handleButtonClick = (
+    index: number,
+    type: string,
+    buttonText: string,
+  ) => {
     console.log(`${type} button ${index} clicked`);
+    if (buttonText === TITLE_BUTTON_TEXT && onOpenTitleModal) {
+      onOpenTitleModal();
+    } else if (buttonText === CLEAR_BUTTON_TEXT && onOpenConfirmationModal) {
+      onOpenConfirmationModal();
+    } else if (
+      buttonText === DATE_BUTTON_TEXT &&
+      onOpenDatePicker &&
+      fechaButtonRef.current
+    ) {
+      const buttonRect = fechaButtonRef.current.getBoundingClientRect();
+      onOpenDatePicker(buttonRect);
+    }
   };
 
   const handleNumberInput = (value: number) => {
@@ -30,8 +62,6 @@ export default function ControlsBar() {
   };
 
   const buttonConfigs = Array.from({ length: TOTAL_BUTTONS }, (_, index) => {
-    // Button indices: 0-21 (22 total)
-
     if (index < IMAGES_LENGTH) {
       return {
         type: 'image' as const,
@@ -75,6 +105,19 @@ export default function ControlsBar() {
             />
           );
         }
+        if (el.text === DATE_BUTTON_TEXT) {
+          return (
+            <Button
+              key={el.key}
+              ref={fechaButtonRef}
+              imgSrc={el.type === 'image' ? el.imgSrc : undefined}
+              emoji={el.type === 'emoji' ? el.emoji : undefined}
+              altText={el.text}
+              buttonText={el.text}
+              onClick={() => handleButtonClick(index, el.type, el.text)}
+            />
+          );
+        }
         return (
           <Button
             key={el.key}
@@ -82,7 +125,7 @@ export default function ControlsBar() {
             emoji={el.type === 'emoji' ? el.emoji : undefined}
             altText={el.text}
             buttonText={el.text}
-            onClick={() => handleButtonClick(index, el.type)}
+            onClick={() => handleButtonClick(index, el.type, el.text)}
           />
         );
       })}
