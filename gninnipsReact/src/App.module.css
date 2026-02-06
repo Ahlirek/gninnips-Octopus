@@ -6,23 +6,6 @@
     overflow: hidden;
 }
 
-.upperSection {
-    display: flex; 
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-
-}
-
-.configPanel{
-    display: flex;
-    flex: 1;
-    padding: 1.5rem;
-    border-right: 1px solid #dee2e6;
-    flex-shrink: 0; 
-    min-width: 250px;
-}
-
 .previewArea{
     display: flex;
     flex: 3;

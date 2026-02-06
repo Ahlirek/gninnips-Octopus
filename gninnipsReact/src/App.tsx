@@ -67,16 +67,11 @@ function App() {
 
   return (
     <div className={styles.appContainer}>
-      <div className={styles.upperSection}>
-        <div className={styles.configPanel}>
-          <ConfigurationPanel />
-        </div>
-        <div className={styles.previewArea}>
-          <PreviewArea />
-          {/* If you want to display the title in PreviewArea, pass it as a prop:
+      <div className={styles.previewArea}>
+        <PreviewArea />
+        {/* If you want to display the title in PreviewArea, pass it as a prop:
               <PreviewArea title={title} />
           */}
-        </div>
       </div>
 
       <div className={styles.controlsBar}>

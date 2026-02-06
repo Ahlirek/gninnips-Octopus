@@ -17,11 +17,12 @@ export default function TitleInputModal({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
+    if (!isOpen) {
+      return;
     }
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
   }, [isOpen]);
 
   useEffect(() => {
@@ -39,9 +40,8 @@ export default function TitleInputModal({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && title.trim()) {
       handleSubmit();
-    }
-    if (e.key === 'Escape') {
-      handleCancel();
+    } else if (e.key === 'Escape') {
+      onClose();
     }
   };
 
@@ -51,13 +51,9 @@ export default function TitleInputModal({
     }
   };
 
-  const handleCancel = () => {
-    onClose();
-  };
-
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      handleCancel();
+      onClose();
     }
   };
 
@@ -72,6 +68,8 @@ export default function TitleInputModal({
       <div
         className={styles.modalContainer}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
+        tabIndex={-1}
       >
         <h3 className={styles.modalTitle}>Enter Image Title</h3>
         <input
@@ -79,7 +77,6 @@ export default function TitleInputModal({
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={handleKeyDown}
           placeholder="Inserte el titulo del entrenamiento..."
           className={styles.input}
         />
@@ -93,7 +90,7 @@ export default function TitleInputModal({
             Save
           </button>
           <button
-            onClick={handleCancel}
+            onClick={onClose}
             className={styles.cancelButton}
             type="button"
           >

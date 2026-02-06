@@ -21,10 +21,6 @@ export default function ConfirmationInputModal({
   cancelText = 'Cancel',
   icon = '⚠️',
 }: ConfirmationModalProps) {
-  const handleConfirm = () => {
-    onConfirm();
-  };
-
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
