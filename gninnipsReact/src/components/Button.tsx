@@ -1,5 +1,6 @@
-import React, { forwardRef } from 'react';
-import styles from './Button.module.css';
+import React, { forwardRef } from "react";
+import styles from "./Button.module.css";
+import HotkeyLabel from "./HotkeyLabel";
 
 interface ButtonProps {
   imgSrc?: string;
@@ -8,6 +9,9 @@ interface ButtonProps {
   buttonText?: string;
   onClick: React.MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;
+  "data-index"?: string;
+  "data-button-text"?: string;
+  title?: string;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -15,10 +19,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     {
       imgSrc,
       emoji,
-      altText = 'Image Button',
-      buttonText = '',
+      altText = "Image Button",
+      buttonText = "",
       onClick,
       disabled = false,
+      "data-index": dataIndex,
+      "data-button-text": dataButtonText,
+      title,
     },
     ref,
   ) => {
@@ -29,6 +36,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         onClick={onClick}
         disabled={disabled}
         aria-label={altText}
+        data-index={dataIndex}
+        data-button-text={dataButtonText}
+        title={title}
       >
         {imgSrc ? (
           <img src={imgSrc} alt={altText} className={styles.buttonImage} />
@@ -36,13 +46,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           <span className={styles.buttonEmoji}>{emoji}</span>
         ) : null}
 
-        {buttonText && <span className={styles.buttonText}>{buttonText}</span>}
+        {buttonText && (
+          <span className={styles.buttonText}>
+            <HotkeyLabel text={buttonText} />
+          </span>
+        )}
       </button>
     );
   },
 );
 
-Button.displayName = 'Button';
+Button.displayName = "Button";
 
 export default Button;
 

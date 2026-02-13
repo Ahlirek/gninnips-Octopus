@@ -1,3 +1,4 @@
+import { useModalKeyboardEvents } from '../hooks/useModalKeyboardEvents';
 import styles from './ConfirmationModal.module.css';
 import { useEffect } from 'react';
 
@@ -21,6 +22,8 @@ export default function ConfirmationInputModal({
   cancelText = 'Cancel',
   icon = '⚠️',
 }: ConfirmationModalProps) {
+  useModalKeyboardEvents({ isOpen, onClose, onConfirm, blurOnConfirm: true });
+
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -38,22 +41,6 @@ export default function ConfirmationInputModal({
       document.body.classList.remove(styles.modalOpen);
     };
   }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      } else if (e.key === 'Enter') {
-        onConfirm();
-        (document.activeElement as HTMLElement)?.blur();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, onConfirm]);
 
   if (!isOpen) return null;
 

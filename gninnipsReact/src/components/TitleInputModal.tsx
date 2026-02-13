@@ -1,5 +1,6 @@
-import styles from './TitleInputModal.module.css';
-import { useState, useRef, useEffect } from 'react';
+import styles from "./TitleInputModal.module.css";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useModalKeyboardEvents } from "../hooks/useModalKeyboardEvents";
 
 interface TitleInputModalProps {
   isOpen: boolean;
@@ -11,9 +12,21 @@ export default function TitleInputModal({
   isOpen,
   onClose,
   onSave,
-  initialTitle = '',
+  initialTitle = "",
 }: TitleInputModalProps) {
   const [title, setTitle] = useState(initialTitle);
+  const handleSubmit = useCallback(() => {
+    if (title.trim()) {
+      onSave(title.trim());
+    }
+  }, [title, onSave]);
+
+  useModalKeyboardEvents({
+    isOpen,
+    onClose,
+    onConfirm: handleSubmit,
+    canConfirm: !!title.trim(),
+  });
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -37,20 +50,6 @@ export default function TitleInputModal({
     };
   }, [isOpen]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && title.trim()) {
-      handleSubmit();
-    } else if (e.key === 'Escape') {
-      onClose();
-    }
-  };
-
-  const handleSubmit = () => {
-    if (title.trim()) {
-      onSave(title.trim());
-    }
-  };
-
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -68,8 +67,6 @@ export default function TitleInputModal({
       <div
         className={styles.modalContainer}
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={handleKeyDown}
-        tabIndex={-1}
       >
         <h3 className={styles.modalTitle}>Enter Image Title</h3>
         <input
