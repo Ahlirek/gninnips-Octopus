@@ -29,7 +29,9 @@ export function useModalKeyboardEvents({
           onClose();
           break;
         case 'Enter':
-          if (!canConfirm) return;
+          if (!canConfirm) {
+            return;
+          }
           onConfirm();
           if (blurOnConfirm) {
             (document.activeElement as HTMLElement)?.blur();

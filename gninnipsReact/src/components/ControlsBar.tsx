@@ -1,8 +1,8 @@
-import { useRef, useState, useCallback} from "react";
-import Button from "./Button.tsx";
-import NumberInputButton from "./NumberInputButton.tsx";
-import styles from "./ControlsBar.module.css";
-import { useKeyboardShorcuts } from "../hooks/useKeyboardShorcuts.ts";
+import { useRef, useState, useCallback } from 'react';
+import Button from './Button.tsx';
+import NumberInputButton from './NumberInputButton.tsx';
+import styles from './ControlsBar.module.css';
+import { useKeyboardShorcuts } from '../hooks/useKeyboardShorcuts.ts';
 
 interface ControlsBarProps {
   onImageButtonClick: (index: number) => void;
@@ -17,7 +17,39 @@ interface ControlsBarProps {
   onRight: () => void;
   onLoadTraining: () => void;
   onDownloadTraining: () => void;
+  shorcutsDisabled: boolean;
 }
+
+const IMAGES_LENGTH = 10;
+const TOTAL_BUTTONS = 22;
+const NUMBER_INPUT_INDEX = 15;
+
+const TITLE_BUTTON_TEXT = '[T]itulo';
+const DATE_BUTTON_TEXT = '[F]echa';
+const CLEAR_BUTTON_TEXT = '[L]impiar';
+const DELETE_BUTTON_TEXT = 'Borrar';
+const LOOP_BUTTON_TEXT = '[C]iclo';
+const REPETITIONS_BUTTON_TEXT = '[R]epeticiones';
+const SUM_TIME_BUTON_TEXT = '[S]umatoria Tiempo';
+const LEFT_BUTTON_TEXT = 'Izquierda';
+const RIGHT_BUTTON_TEXT = 'Derecha';
+const LOAD_TRAINING_BUTTON_TEXT = 'Cargar Entrenamiento';
+const DOWNLOAD_TRAINING_BUTTON_TEXT = '[D]escargar Entrenamiento';
+
+const emojisData = [
+  ['␡', DELETE_BUTTON_TEXT, 'Retroceso'],
+  ['🗑️', CLEAR_BUTTON_TEXT, 'L'],
+  ['𝐓', TITLE_BUTTON_TEXT, 'T'],
+  ['🗓️', DATE_BUTTON_TEXT, 'F'],
+  ['［ ］', LOOP_BUTTON_TEXT, 'C'],
+  ['X ❓', REPETITIONS_BUTTON_TEXT, 'R'],
+  ['⏱️➕', SUM_TIME_BUTON_TEXT, 'S'],
+  ['', ''],
+  ['⬅️', LEFT_BUTTON_TEXT, 'Flecha Izquierda'],
+  ['➡️', RIGHT_BUTTON_TEXT, 'Flecha Derecha'],
+  ['📎', LOAD_TRAINING_BUTTON_TEXT, 'U'],
+  ['💾', DOWNLOAD_TRAINING_BUTTON_TEXT, 'D'],
+];
 
 export default function ControlsBar({
   onImageButtonClick,
@@ -32,79 +64,49 @@ export default function ControlsBar({
   onRight,
   onLoadTraining,
   onDownloadTraining,
+  shorcutsDisabled = false,
 }: ControlsBarProps) {
-  const IMAGES_LENGTH = 10;
-  const TOTAL_BUTTONS = 22;
-  const NUMBER_INPUT_INDEX = 15;
-
-  const TITLE_BUTTON_TEXT = "[T]itulo";
-  const DATE_BUTTON_TEXT = "[F]echa";
-  const CLEAR_BUTTON_TEXT = "[L]impiar";
-  const DELETE_BUTTON_TEXT = "Borrar";
-  const LOOP_BUTTON_TEXT = "[C]iclo";
-  const REPETITIONS_BUTTON_TEXT = "[R]epeticiones";
-  const SUM_TIME_BUTON_TEXT = "[S]umatoria Tiempo";
-  const LEFT_BUTTON_TEXT = "Izquierda";
-  const RIGHT_BUTTON_TEXT = "Derecha";
-  const LOAD_TRAINING_BUTTON_TEXT = "Cargar Entrenamiento";
-  const DOWNLOAD_TRAINING_BUTTON_TEXT = "[D]escargar Entrenamiento";
-
-  const emojisData = [
-    ["␡", DELETE_BUTTON_TEXT, "Retroceso"],
-    ["🗑️", CLEAR_BUTTON_TEXT, 'L'],
-    ["𝐓", TITLE_BUTTON_TEXT ,'T'],
-    ["🗓️", DATE_BUTTON_TEXT, 'F'],
-    ["［ ］", LOOP_BUTTON_TEXT, 'C'],
-    ["X ❓", REPETITIONS_BUTTON_TEXT, 'R'],
-    ["⏱️➕", SUM_TIME_BUTON_TEXT, 'S'],
-    ["", ""],
-    ["⬅️", LEFT_BUTTON_TEXT, 'Flecha Izquierda'],
-    ["➡️", RIGHT_BUTTON_TEXT ,'Flecha Derecha'],
-    ["📎", LOAD_TRAINING_BUTTON_TEXT, 'U'],
-    ["💾", DOWNLOAD_TRAINING_BUTTON_TEXT, 'D'],
-  ];
-
   const fechaButtonRef = useRef<HTMLButtonElement>(null);
   const [isNumberInputVisible, setIsNumberInputVisible] = useState(false);
- 
-  const handleNumberInputClose = useCallback(
-    () => {
-      setIsNumberInputVisible(false)
-    },
-    [],
-  )
-  
-  useKeyboardShorcuts({
-    "1": { handler: () => onImageButtonClick(0) },
-    "2": { handler: () => onImageButtonClick(1) },
-    "3": { handler: () => onImageButtonClick(2) },
-    "4": { handler: () => onImageButtonClick(3) },
-    "5": { handler: () => onImageButtonClick(4) },
-    "6": { handler: () => onImageButtonClick(5) },
-    "7": { handler: () => onImageButtonClick(6) },
-    "8": { handler: () => onImageButtonClick(7) },
-    "9": { handler: () => onImageButtonClick(8) },
-    "0": { handler: () => onImageButtonClick(9) },
-    t: { handler: onOpenTitleModal },
-    f: {
-      handler: () => {
-        if (fechaButtonRef.current) {
-          const fechaButtonRect =
-            fechaButtonRef.current.getBoundingClientRect();
-          onOpenDatePicker(fechaButtonRect);
-        }
+
+  const handleNumberInputClose = useCallback(() => {
+    setIsNumberInputVisible(false);
+  }, []);
+
+  useKeyboardShorcuts(
+    {
+      '1': { handler: () => onImageButtonClick(0) },
+      '2': { handler: () => onImageButtonClick(1) },
+      '3': { handler: () => onImageButtonClick(2) },
+      '4': { handler: () => onImageButtonClick(3) },
+      '5': { handler: () => onImageButtonClick(4) },
+      '6': { handler: () => onImageButtonClick(5) },
+      '7': { handler: () => onImageButtonClick(6) },
+      '8': { handler: () => onImageButtonClick(7) },
+      '9': { handler: () => onImageButtonClick(8) },
+      '0': { handler: () => onImageButtonClick(9) },
+      t: { handler: onOpenTitleModal },
+      f: {
+        handler: () => {
+          if (fechaButtonRef.current) {
+            const fechaButtonRect =
+              fechaButtonRef.current.getBoundingClientRect();
+            onOpenDatePicker(fechaButtonRect);
+          }
+        },
       },
+      l: { handler: onOpenConfirmationModal },
+      r: { handler: () => setIsNumberInputVisible(true) },
+      backspace: { handler: onDelete, options: { preventDefault: true } },
+      c: { handler: onLoop },
+      s: { handler: onSumTime },
+      arrowleft: { handler: onLeft, options: { preventDefault: true } },
+      arrowright: { handler: onRight, options: { preventDefault: true } },
+      u: { handler: onLoadTraining },
+      g: { handler: onDownloadTraining },
     },
-    l: { handler: onOpenConfirmationModal },
-    r: { handler: () => setIsNumberInputVisible(true)},
-    backspace: { handler: onDelete, options: { preventDefault: true } },
-    c: { handler: onLoop },
-    s: { handler: onSumTime },
-    arrowleft: { handler: onLeft, options: { preventDefault: true } },
-    arrowright: { handler: onRight, options: { preventDefault: true } },
-    u: { handler: onLoadTraining },
-    g: { handler: onDownloadTraining },
-  });
+    shorcutsDisabled,
+  );
 
   const handleButtonClick = (
     index: number,
@@ -112,9 +114,9 @@ export default function ControlsBar({
     buttonText: string,
   ) => {
     console.log(`${type} button ${index} clicked`);
-    if (type === "image") {
+    if (type === 'image') {
       onImageButtonClick(index);
-    } else if (type === "emoji") {
+    } else if (type === 'emoji') {
       switch (buttonText) {
         case TITLE_BUTTON_TEXT:
           onOpenTitleModal();
@@ -160,33 +162,33 @@ export default function ControlsBar({
 
   const buttonConfigs = Array.from({ length: TOTAL_BUTTONS }, (_, index) => {
     if (index < IMAGES_LENGTH) {
-        const displayIndex = (index+1)%IMAGES_LENGTH;
+      const displayIndex = (index + 1) % IMAGES_LENGTH;
       return {
-        type: "image" as const,
+        type: 'image' as const,
         imgSrc: `/images/${index + 1}.png`,
         text: `Posición [${displayIndex}]`,
         key: `img-${index}`,
-        title: `Shorcut: ${displayIndex}`
+        title: `Shorcut: ${displayIndex}`,
       };
     }
 
-    const isNumberInput = index === NUMBER_INPUT_INDEX
+    const isNumberInput = index === NUMBER_INPUT_INDEX;
     const emojiIndex = Math.max(0, index - IMAGES_LENGTH);
     const currentEmoji = emojisData[emojiIndex];
 
     return {
-      type: isNumberInput ? "numberInput" : "emoji" ,
+      type: isNumberInput ? 'numberInput' : 'emoji',
       emoji: currentEmoji[0],
       text: currentEmoji[1],
-      key: isNumberInput ? "numberInput": `emoji-${index}`,
-      title: `Shorcut: ${currentEmoji[2]}`
+      key: isNumberInput ? 'numberInput' : `emoji-${index}`,
+      title: `Shorcut: ${currentEmoji[2]}`,
     };
   });
 
   return (
     <div className={styles.buttonGrid}>
       {buttonConfigs.map((el, index) => {
-        if (el.type === "numberInput") {
+        if (el.type === 'numberInput') {
           return (
             <NumberInputButton
               key={el.key}
@@ -198,17 +200,17 @@ export default function ControlsBar({
               title={el.title}
               placeholder="Enter number"
               onSubmit={onRep}
-                isOpen={isNumberInputVisible}
-                onOpen={() => setIsNumberInputVisible(true)}
-                onClose={handleNumberInputClose}
+              isOpen={isNumberInputVisible}
+              onOpen={() => setIsNumberInputVisible(true)}
+              onClose={handleNumberInputClose}
             />
           );
         }
         return (
           <Button
             key={el.key}
-            imgSrc={el.type === "image" ? el.imgSrc : undefined}
-            emoji={el.type === "emoji" ? el.emoji : undefined}
+            imgSrc={el.type === 'image' ? el.imgSrc : undefined}
+            emoji={el.type === 'emoji' ? el.emoji : undefined}
             altText={el.text}
             buttonText={el.text}
             data-index={index.toString()}

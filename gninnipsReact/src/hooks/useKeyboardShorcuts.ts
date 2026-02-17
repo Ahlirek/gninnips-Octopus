@@ -20,7 +20,9 @@ export function useKeyboardShorcuts(
   disabled = false,
 ) {
   useEffect(() => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeElement = document.activeElement;
@@ -28,7 +30,9 @@ export function useKeyboardShorcuts(
         activeElement?.tagName === 'INPUT' ||
         activeElement?.tagName === 'TEXTAREA' ||
         activeElement?.hasAttribute('contenteditable');
-      if (isTyping) return;
+      if (isTyping) {
+        return;
+      }
 
       const key = e.key.toLowerCase();
       const shortcut = shortcuts[key];
