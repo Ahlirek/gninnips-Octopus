@@ -1,197 +1,201 @@
-/* TrainingBlockModal.module.css */
-
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modalContainer {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  max-width: 700px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+.modalContainer.modalContainer{
+    width: 90%;
+    max-width: 700px;
+    overflow-y: auto;
 }
 
 .modalContainer h2 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font-size: 1.8rem;
-  color: #333;
-  text-align: center;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    color: #333;
+    text-align: center;
 }
 
-/* Centered image */
+.rpmRow {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    gap: 1rem;
+    margin-bottom: .5rem;
+}
+
+.middleRow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: .5rem;
+}
+
+.leftColumn, .centerColumn, .rightColumn {
+    justify-self: center;
+}
+
 .imageWrapper {
-  display: flex;
-  justify-content: center;
-  margin: 1rem 0 1.5rem;
+    display: flex;
+    justify-content: center;
+    margin: 0;
 }
 
 .buttonImage {
-  width: 150px;
-  height: auto;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  object-fit: contain;
-}
-
-/* Top row: HR, RPM(s), Jumps */
-.topRow {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+    width: 150px;
+    height: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    object-fit: contain;
 }
 
 .fieldGroup {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 177px;
 }
 
 .fieldGroup label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  color: #555;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #555;
 }
 
 .fieldGroup input {
-  padding: 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.2s;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    width: 150px;
+    text-align: center;
 }
 
 .fieldGroup input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.rpmRow .fieldGroup{
+    width: 210px;
+}
+
+.bottomRow .fieldGroup{
+    width: 250px;
 }
 
 .error {
-  color: #dc3545;
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
+    color: #dc3545;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    min-height: 1.5rem; 
 }
 
-/* Toggle switch (non‑button) */
 .toggleWrapper {
-  margin: 1.5rem 0;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    margin: 1.5rem 0;
+    align-items: center;
+    gap: 1rem;
 }
 
 .toggleLabel {
-  font-weight: 600;
-  color: #555;
-  white-space: nowrap;
+    grid-column: 1;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+    justify-self: end;
 }
 
 .toggleSwitch {
-  position: relative;
-  display: flex;
-  width: 280px;
-  height: 44px;
-  background: #e9ecef;
-  border-radius: 22px;
-  cursor: pointer;
-  user-select: none;
+    grid-column: 2;
+    position: relative;
+    display: flex;
+    width: 280px;
+    height: 44px;
+    background: #e9ecef;
+    border-radius: 22px;
+    cursor: pointer;
+    user-select: none;
 }
 
 .toggleOption {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  font-size: 0.95rem;
-  color: #495057;
-  transition: color 0.2s;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    font-size: 0.95rem;
+    color: #495057;
+    transition: color 0.2s;
 }
 
 .toggleOption.active {
-  color: white;
+    color: white;
 }
 
 .toggleIndicator {
-  position: absolute;
-  top: 2px;
-  bottom: 2px;
-  width: 50%;
-  background: #007bff;
-  border-radius: 20px;
-  transition: left 0.2s ease;
-}
-
-/* Bottom row: Distance/Time inputs */
-.bottomRow {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-/* Action buttons */
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  border-top: 1px solid #dee2e6;
-  padding-top: 1.5rem;
-}
-
-.cancel, .insert {
-  padding: 0.6rem 2rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.cancel {
-  background: #6c757d;
-  color: white;
-}
-
-.cancel:hover {
-  background: #5a6268;
-}
-
-.insert {
-  background: #28a745;
-  color: white;
-}
-
-.insert:hover {
-  background: #218838;
-}
-
-/* Disabled button style if needed */
-.insert:disabled, .cancel:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    width: 50%;
+    background: #007bff;
+    border-radius: 20px;
+    transition: left 0.2s ease;
 }
 
 .toggleOption:focus-visible {
-  outline: 2px solid #007bff;
-  outline-offset: 2px;
-  border-radius: 20px;
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+    border-radius: 20px;
+}
+
+.bottomRow {
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    border-top: 1px solid #dee2e6;
+    padding-top: 1.5rem;
+}
+
+.cancel, .insert {
+    padding: 0.6rem 2rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.cancel:hover {
+    background: #5a6268;
+}
+
+.insert {
+    background: #28a745;
+    color: white;
+}
+
+.insert:hover {
+    background: #218838;
+}
+
+.insert:disabled, .cancel:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 

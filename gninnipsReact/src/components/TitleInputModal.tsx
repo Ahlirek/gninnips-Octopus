@@ -1,6 +1,7 @@
-import styles from "./TitleInputModal.module.css";
-import { useState, useRef, useEffect, useCallback } from "react";
-import { useModalKeyboardEvents } from "../hooks/useModalKeyboardEvents";
+import modalStyles from './modalStyles.module.css';
+import styles from './TitleInputModal.module.css';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useModalKeyboardEvents } from '../hooks/useModalKeyboardEvents';
 
 interface TitleInputModalProps {
   isOpen: boolean;
@@ -12,7 +13,7 @@ export default function TitleInputModal({
   isOpen,
   onClose,
   onSave,
-  initialTitle = "",
+  initialTitle = '',
 }: TitleInputModalProps) {
   const [title, setTitle] = useState(initialTitle);
   const handleSubmit = useCallback(() => {
@@ -60,12 +61,12 @@ export default function TitleInputModal({
 
   return (
     <div
-      className={styles.overlay}
+      className={modalStyles.overlay}
       onClick={handleOverlayClick}
       data-testid="modal-overlay"
     >
       <div
-        className={styles.modalContainer}
+        className={`${modalStyles.modalContainer} ${styles.modalContainer}`}
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className={styles.modalTitle}>Enter Image Title</h3>

@@ -1,7 +1,8 @@
-import type { TrainingBlock } from '../types';
+import modalStyles from './modalStyles.module.css';
 import styles from './TrainingBlockModal.module.css';
+import type { TrainingBlock } from '../types';
 import { useModalKeyboardEvents } from '../hooks/useModalKeyboardEvents';
-import { useEffect, useState, useRef } from 'react';
+import { useState } from 'react';
 
 interface TrainingBlockModalProps {
   isOpen: boolean;
@@ -19,20 +20,10 @@ const RPM_UPPER_LIMIT = 120;
 const DIST_LOWER_LIMIT = 0;
 const DIST_UPPER_LIMIT = 1000;
 
-const HR_LIMIT_ERROR_MESSAGE = `HR debe estar entre ${HR_LOWER_LIMIT} y ${HR_UPPER_LIMIT}`;
-const UP_MESSAGE = 'de pie ';
-const DOWN_MESSAGE = 'sentado ';
-const MAKE_RPM_LIMIT_ERROR_MESSAGE = (upDownMessage: string = ''): string => {
-  return `RPM ${upDownMessage}debe estar entre ${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT}`;
-};
-const MAKE_DIST_LIMIT_ERROR_MESSAGE = (upDownMessage: string = ''): string => {
-  return `Distancia ${upDownMessage}debe estar entre ${DIST_LOWER_LIMIT}-${DIST_UPPER_LIMIT} km`;
-};
-const MAKE_INVALID_TIME_ERROR_MESSAGE = (
-  upDownMessage: string = '',
-): string => {
-  return `Tiempo ${upDownMessage}debe ser mm:ss válido`;
-};
+const HR_LIMIT_ERROR_MESSAGE = `Ingrese un valor entre ${HR_LOWER_LIMIT}%-${HR_UPPER_LIMIT}%`;
+const MAKE_RPM_LIMIT_ERROR_MESSAGE = `Ingrese un valor entre ${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT} RPM`;
+const MAKE_DIST_LIMIT_ERROR_MESSAGE = `Ingrese un valor entre ${DIST_LOWER_LIMIT}-${DIST_UPPER_LIMIT} km`;
+const MAKE_INVALID_TIME_ERROR_MESSAGE = `Ingrese un valor en formato mm:ss válido`;
 
 function timeToSeconds(timeStr: string): number {
   const parts = timeStr.split(':').map(Number);
@@ -92,7 +83,7 @@ export default function TrainingBlockModal({
           rpmUpNum < RPM_LOWER_LIMIT ||
           rpmUpNum > RPM_UPPER_LIMIT
         ) {
-          newErrors.rpmUp = MAKE_RPM_LIMIT_ERROR_MESSAGE(UP_MESSAGE);
+          newErrors.rpmUp = MAKE_RPM_LIMIT_ERROR_MESSAGE;
         }
       }
       if (!optional || rpmDown) {
@@ -102,13 +93,13 @@ export default function TrainingBlockModal({
           rpmDownNum < RPM_LOWER_LIMIT ||
           rpmDownNum > RPM_UPPER_LIMIT
         ) {
-          newErrors.rpmDown = MAKE_RPM_LIMIT_ERROR_MESSAGE(DOWN_MESSAGE);
+          newErrors.rpmDown = MAKE_RPM_LIMIT_ERROR_MESSAGE;
         }
       }
       if (!optional || jumps) {
         const jumpsNum = parseInt(jumps);
         if (isNaN(jumpsNum) || jumpsNum < 1) {
-          newErrors.jumps = 'Nº de saltos debe ser al menos 1';
+          newErrors.jumps = 'Ingrese un valor mayor a 1';
         }
       }
       if (!optional || timeDistValueUp) {
@@ -119,14 +110,12 @@ export default function TrainingBlockModal({
             distValueNum <= DIST_LOWER_LIMIT ||
             distValueNum > DIST_UPPER_LIMIT
           ) {
-            newErrors.timeDistValueUp =
-              MAKE_DIST_LIMIT_ERROR_MESSAGE(UP_MESSAGE);
+            newErrors.timeDistValueUp = MAKE_DIST_LIMIT_ERROR_MESSAGE;
           }
         } else {
           const timeValueNum = timeToSeconds(timeDistValueUp);
           if (isNaN(timeValueNum) || timeValueNum < 0) {
-            newErrors.timeDistValueUp =
-              MAKE_INVALID_TIME_ERROR_MESSAGE(UP_MESSAGE);
+            newErrors.timeDistValueUp = MAKE_INVALID_TIME_ERROR_MESSAGE;
           }
         }
       }
@@ -138,14 +127,12 @@ export default function TrainingBlockModal({
             distValueNum <= DIST_LOWER_LIMIT ||
             distValueNum > DIST_UPPER_LIMIT
           ) {
-            newErrors.timeDistValueDown =
-              MAKE_DIST_LIMIT_ERROR_MESSAGE(DOWN_MESSAGE);
+            newErrors.timeDistValueDown = MAKE_DIST_LIMIT_ERROR_MESSAGE;
           }
         } else {
           const timeValueNum = timeToSeconds(timeDistValueDown);
           if (isNaN(timeValueNum) || timeValueNum < 0) {
-            newErrors.timeDistValueDown =
-              MAKE_INVALID_TIME_ERROR_MESSAGE(DOWN_MESSAGE);
+            newErrors.timeDistValueDown = MAKE_INVALID_TIME_ERROR_MESSAGE;
           }
         }
       }
@@ -157,7 +144,7 @@ export default function TrainingBlockModal({
           rpmNum < RPM_LOWER_LIMIT ||
           rpmNum > RPM_UPPER_LIMIT
         ) {
-          newErrors.rpm = MAKE_RPM_LIMIT_ERROR_MESSAGE();
+          newErrors.rpm = MAKE_RPM_LIMIT_ERROR_MESSAGE;
         }
       }
       if (!optional || timeDistValue) {
@@ -168,12 +155,12 @@ export default function TrainingBlockModal({
             distValueNum <= DIST_LOWER_LIMIT ||
             distValueNum > DIST_UPPER_LIMIT
           ) {
-            newErrors.timeDistValue = MAKE_DIST_LIMIT_ERROR_MESSAGE();
+            newErrors.timeDistValue = MAKE_DIST_LIMIT_ERROR_MESSAGE;
           }
         } else {
           const timeValueNum = timeToSeconds(timeDistValue);
           if (isNaN(timeValueNum) || timeValueNum < 0) {
-            newErrors.timeDistValue = MAKE_INVALID_TIME_ERROR_MESSAGE();
+            newErrors.timeDistValue = MAKE_INVALID_TIME_ERROR_MESSAGE;
           }
         }
       }
@@ -238,37 +225,17 @@ export default function TrainingBlockModal({
     }
   };
   return (
-    <div className={styles.overlay} onClick={handleOverlayClick}>
-      <div className={styles.modalContainer}>
+    <div className={modalStyles.overlay} onClick={handleOverlayClick}>
+      <div className={`${modalStyles.modalContainer} ${styles.modalContainer}`}>
         <h2>Posición {buttonNumber}</h2>
 
-        {buttonImage && (
-          <div className={styles.imageWrapper}>
-            <img
-              src={buttonImage.src}
-              alt={`Botón ${buttonNumber}`}
-              className={styles.buttonImage}
-            />
-          </div>
-        )}
-        <div className={styles.topRow}>
-          <div className={styles.fieldGroup}>
-            <label>HR%</label>
-            <input
-              type="number"
-              value={hr}
-              onChange={(e) => setHr(e.target.value)}
-              placeholder="50-90"
-              autoFocus
-            />
-            {errors.hr && <span className={styles.error}>{errors.hr}</span>}
-          </div>
-
+        <div className={styles.rpmRow}>
           {isJump ? (
             <>
               <div className={styles.fieldGroup}>
                 <label>RPM de pie</label>
                 <input
+                  autoFocus
                   type="number"
                   value={rpmUp}
                   onChange={(e) => setRpmUp(e.target.value)}
@@ -276,9 +243,7 @@ export default function TrainingBlockModal({
                   max={RPM_UPPER_LIMIT}
                   placeholder={`${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT}`}
                 />
-                {errors.rpmUp && (
-                  <span className={styles.error}>{errors.rpmUp}</span>
-                )}
+                <span className={styles.error}>{errors.rpmUp || ''}</span>
               </div>
               <div className={styles.fieldGroup}>
                 <label>RPM sentado</label>
@@ -290,10 +255,54 @@ export default function TrainingBlockModal({
                   max={RPM_UPPER_LIMIT}
                   placeholder={`${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT}`}
                 />
-                {errors.rpmDown && (
-                  <span className={styles.error}>{errors.rpmDown}</span>
-                )}
+                <span className={styles.error}>{errors.rpmDown || ''}</span>
               </div>
+            </>
+          ) : (
+            <div className={styles.fieldGroup}>
+              <label>RPM</label>
+              <input
+                autoFocus
+                type="number"
+                value={rpm}
+                onChange={(e) => setRpm(e.target.value)}
+                min={RPM_LOWER_LIMIT}
+                max={RPM_UPPER_LIMIT}
+                placeholder={`${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT}`}
+              />
+              <span className={styles.error}>{errors.rpm || ''}</span>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.middleRow}>
+          <div className={styles.leftColumn}>
+            <div className={styles.fieldGroup}>
+              <label>HR%</label>
+              <input
+                type="number"
+                value={hr}
+                onChange={(e) => setHr(e.target.value)}
+                placeholder={`${HR_LOWER_LIMIT}-${HR_UPPER_LIMIT}`}
+              />
+              <span className={styles.error}>{errors.hr || ''}</span>
+            </div>
+          </div>
+
+          <div className={styles.centerColumn}>
+            {buttonImage && (
+              <div className={styles.imageWrapper}>
+                <img
+                  src={buttonImage.src}
+                  alt={`Botón ${buttonNumber}`}
+                  className={styles.buttonImage}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className={styles.rightColumn}>
+            {isJump && (
               <div className={styles.fieldGroup}>
                 <label>Nº de saltos</label>
                 <input
@@ -302,26 +311,12 @@ export default function TrainingBlockModal({
                   onChange={(e) => setJumps(e.target.value)}
                   placeholder="#"
                 />
-                {errors.jumps && (
-                  <span className={styles.error}>{errors.jumps}</span>
-                )}
+                <span className={styles.error}>{errors.jumps || ''}</span>
               </div>
-            </>
-          ) : (
-            <div className={styles.fieldGroup}>
-              <label>RPM</label>
-              <input
-                type="number"
-                value={rpm}
-                onChange={(e) => setRpm(e.target.value)}
-                min={RPM_LOWER_LIMIT}
-                max={RPM_UPPER_LIMIT}
-                placeholder={`${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT}`}
-              />
-              {errors.rpm && <span className={styles.error}>{errors.rpm}</span>}
-            </div>
-          )}
+            )}
+          </div>
         </div>
+
         <div className={styles.toggleWrapper}>
           <span className={styles.toggleLabel}>Unidad:</span>
           <div className={styles.toggleSwitch}>
@@ -361,6 +356,7 @@ export default function TrainingBlockModal({
             />
           </div>
         </div>
+
         <div className={styles.bottomRow}>
           {isJump ? (
             <>
@@ -373,9 +369,9 @@ export default function TrainingBlockModal({
                   onChange={(e) => setTimeDistValueUp(e.target.value)}
                   placeholder={metric === 'distance' ? 'km' : 'mm:ss'}
                 />
-                {errors.timeDistValueUp && (
-                  <span className={styles.error}>{errors.timeDistValueUp}</span>
-                )}
+                <span className={styles.error}>
+                  {errors.timeDistValueUp || ''}
+                </span>
               </div>
               <div className={styles.fieldGroup}>
                 <label>
@@ -388,11 +384,9 @@ export default function TrainingBlockModal({
                   onChange={(e) => setTimeDistValueDown(e.target.value)}
                   placeholder={metric === 'distance' ? 'km' : 'mm:ss'}
                 />
-                {errors.timeDistValueDown && (
-                  <span className={styles.error}>
-                    {errors.timeDistValueDown}
-                  </span>
-                )}
+                <span className={styles.error}>
+                  {errors.timeDistValueDown || ''}
+                </span>
               </div>
             </>
           ) : (
@@ -403,9 +397,7 @@ export default function TrainingBlockModal({
                 onChange={(e) => setTimeDistValue(e.target.value)}
                 placeholder={metric === 'distance' ? 'km' : 'mm:ss'}
               />
-              {errors.timeDistValue && (
-                <span className={styles.error}>{errors.timeDistValue}</span>
-              )}
+              <span className={styles.error}>{errors.timeDistValue || ''}</span>
             </div>
           )}
         </div>

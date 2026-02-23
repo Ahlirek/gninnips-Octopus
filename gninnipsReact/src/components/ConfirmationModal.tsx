@@ -1,5 +1,6 @@
-import { useModalKeyboardEvents } from '../hooks/useModalKeyboardEvents';
+import modalStyles from './modalStyles.module.css';
 import styles from './ConfirmationModal.module.css';
+import { useModalKeyboardEvents } from '../hooks/useModalKeyboardEvents';
 import { useEffect } from 'react';
 
 interface ConfirmationModalProps {
@@ -52,9 +53,9 @@ export default function ConfirmationInputModal({
         : [];
 
   return (
-    <div className={styles.overlay} onClick={handleOverlayClick}>
+    <div className={modalStyles.overlay} onClick={handleOverlayClick}>
       <div
-        className={styles.modalContainer}
+        className={modalStyles.modalContainer}
         onClick={(e) => e.stopPropagation()}
       >
         {icon && <div className={styles.modalIcon}>{icon}</div>}
