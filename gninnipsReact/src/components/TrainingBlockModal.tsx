@@ -31,10 +31,26 @@ function timeToSeconds(timeStr: string): number {
     return NaN;
   }
   const [mins, secs] = parts;
-  if (isNaN(mins) || isNaN(secs) || secs < 0 || secs > 59) return NaN;
+  if (isNaN(mins) || isNaN(secs) || secs < 0 || secs > 59) {
+    return NaN;
+  }
   return mins * 60 + secs;
 }
 
+function isDistanceValid(distanceStr: string): boolean {
+  if (distanceStr.includes(':')) {
+    return false;
+  }
+  const distance = parseFloat(distanceStr);
+  if (
+    isNaN(distance) ||
+    distance <= DIST_LOWER_LIMIT ||
+    distance > DIST_UPPER_LIMIT
+  ) {
+    return false;
+  }
+  return true;
+}
 //INFO: USE IT TO PREFILL DATA WHEN UPDATING VALUES
 function secondsToTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -104,12 +120,7 @@ export default function TrainingBlockModal({
       }
       if (!optional || timeDistValueUp) {
         if (metric === 'distance') {
-          const distValueNum = parseFloat(timeDistValueUp);
-          if (
-            isNaN(distValueNum) ||
-            distValueNum <= DIST_LOWER_LIMIT ||
-            distValueNum > DIST_UPPER_LIMIT
-          ) {
+          if (!isDistanceValid(timeDistValueUp)) {
             newErrors.timeDistValueUp = MAKE_DIST_LIMIT_ERROR_MESSAGE;
           }
         } else {
@@ -121,12 +132,7 @@ export default function TrainingBlockModal({
       }
       if (!optional || timeDistValueDown) {
         if (metric === 'distance') {
-          const distValueNum = parseFloat(timeDistValueDown);
-          if (
-            isNaN(distValueNum) ||
-            distValueNum <= DIST_LOWER_LIMIT ||
-            distValueNum > DIST_UPPER_LIMIT
-          ) {
+          if (!isDistanceValid(timeDistValueDown)) {
             newErrors.timeDistValueDown = MAKE_DIST_LIMIT_ERROR_MESSAGE;
           }
         } else {
@@ -149,12 +155,7 @@ export default function TrainingBlockModal({
       }
       if (!optional || timeDistValue) {
         if (metric === 'distance') {
-          const distValueNum = parseFloat(timeDistValue);
-          if (
-            isNaN(distValueNum) ||
-            distValueNum <= DIST_LOWER_LIMIT ||
-            distValueNum > DIST_UPPER_LIMIT
-          ) {
+          if (!isDistanceValid(timeDistValue)) {
             newErrors.timeDistValue = MAKE_DIST_LIMIT_ERROR_MESSAGE;
           }
         } else {
