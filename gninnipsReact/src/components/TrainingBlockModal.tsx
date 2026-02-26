@@ -21,9 +21,10 @@ const DIST_LOWER_LIMIT = 0;
 const DIST_UPPER_LIMIT = 1000;
 
 const HR_LIMIT_ERROR_MESSAGE = `Ingrese un valor entre ${HR_LOWER_LIMIT}%-${HR_UPPER_LIMIT}%`;
-const MAKE_RPM_LIMIT_ERROR_MESSAGE = `Ingrese un valor entre ${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT} RPM`;
-const MAKE_DIST_LIMIT_ERROR_MESSAGE = `Ingrese un valor entre ${DIST_LOWER_LIMIT}-${DIST_UPPER_LIMIT} km`;
-const MAKE_INVALID_TIME_ERROR_MESSAGE = `Ingrese un valor en formato mm:ss válido`;
+const RPM_LIMIT_ERROR_MESSAGE = `Ingrese un valor entre ${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT} RPM`;
+const DIST_LIMIT_ERROR_MESSAGE = `Ingrese un valor entre ${DIST_LOWER_LIMIT}-${DIST_UPPER_LIMIT} km`;
+const INVALID_TIME_FORMAT_ERROR_MESSAGE = `Ingrese un valor en formato mm:ss válido`;
+const INVALID_TIME_ERROR_MESSAGE = `Ingrese un tiempo mayor a cero`;
 
 function timeToSeconds(timeStr: string): number {
   const parts = timeStr.split(':').map(Number);
@@ -45,7 +46,7 @@ function isDistanceValid(distanceStr: string): boolean {
   if (
     isNaN(distance) ||
     distance <= DIST_LOWER_LIMIT ||
-    distance > DIST_UPPER_LIMIT
+    distance >= DIST_UPPER_LIMIT
   ) {
     return false;
   }
@@ -99,7 +100,7 @@ export default function TrainingBlockModal({
           rpmUpNum < RPM_LOWER_LIMIT ||
           rpmUpNum > RPM_UPPER_LIMIT
         ) {
-          newErrors.rpmUp = MAKE_RPM_LIMIT_ERROR_MESSAGE;
+          newErrors.rpmUp = RPM_LIMIT_ERROR_MESSAGE;
         }
       }
       if (!optional || rpmDown) {
@@ -109,7 +110,7 @@ export default function TrainingBlockModal({
           rpmDownNum < RPM_LOWER_LIMIT ||
           rpmDownNum > RPM_UPPER_LIMIT
         ) {
-          newErrors.rpmDown = MAKE_RPM_LIMIT_ERROR_MESSAGE;
+          newErrors.rpmDown = RPM_LIMIT_ERROR_MESSAGE;
         }
       }
       if (!optional || jumps) {
@@ -121,24 +122,28 @@ export default function TrainingBlockModal({
       if (!optional || timeDistValueUp) {
         if (metric === 'distance') {
           if (!isDistanceValid(timeDistValueUp)) {
-            newErrors.timeDistValueUp = MAKE_DIST_LIMIT_ERROR_MESSAGE;
+            newErrors.timeDistValueUp = DIST_LIMIT_ERROR_MESSAGE;
           }
         } else {
           const timeValueNum = timeToSeconds(timeDistValueUp);
-          if (isNaN(timeValueNum) || timeValueNum < 0) {
-            newErrors.timeDistValueUp = MAKE_INVALID_TIME_ERROR_MESSAGE;
+          if (isNaN(timeValueNum)) {
+            newErrors.timeDistValueUp = INVALID_TIME_FORMAT_ERROR_MESSAGE;
+          } else if (timeValueNum <= 0) {
+            newErrors.timeDistValueUp = INVALID_TIME_ERROR_MESSAGE;
           }
         }
       }
       if (!optional || timeDistValueDown) {
         if (metric === 'distance') {
           if (!isDistanceValid(timeDistValueDown)) {
-            newErrors.timeDistValueDown = MAKE_DIST_LIMIT_ERROR_MESSAGE;
+            newErrors.timeDistValueDown = DIST_LIMIT_ERROR_MESSAGE;
           }
         } else {
           const timeValueNum = timeToSeconds(timeDistValueDown);
-          if (isNaN(timeValueNum) || timeValueNum < 0) {
-            newErrors.timeDistValueDown = MAKE_INVALID_TIME_ERROR_MESSAGE;
+          if (isNaN(timeValueNum)) {
+            newErrors.timeDistValueDown = INVALID_TIME_FORMAT_ERROR_MESSAGE;
+          } else if (timeValueNum <= 0) {
+            newErrors.timeDistValueDown = INVALID_TIME_ERROR_MESSAGE;
           }
         }
       }
@@ -150,18 +155,20 @@ export default function TrainingBlockModal({
           rpmNum < RPM_LOWER_LIMIT ||
           rpmNum > RPM_UPPER_LIMIT
         ) {
-          newErrors.rpm = MAKE_RPM_LIMIT_ERROR_MESSAGE;
+          newErrors.rpm = RPM_LIMIT_ERROR_MESSAGE;
         }
       }
       if (!optional || timeDistValue) {
         if (metric === 'distance') {
           if (!isDistanceValid(timeDistValue)) {
-            newErrors.timeDistValue = MAKE_DIST_LIMIT_ERROR_MESSAGE;
+            newErrors.timeDistValue = DIST_LIMIT_ERROR_MESSAGE;
           }
         } else {
           const timeValueNum = timeToSeconds(timeDistValue);
-          if (isNaN(timeValueNum) || timeValueNum < 0) {
-            newErrors.timeDistValue = MAKE_INVALID_TIME_ERROR_MESSAGE;
+          if (isNaN(timeValueNum)) {
+            newErrors.timeDistValue = INVALID_TIME_FORMAT_ERROR_MESSAGE;
+          } else if (timeValueNum <= 0) {
+            newErrors.timeDistValue = INVALID_TIME_ERROR_MESSAGE;
           }
         }
       }
@@ -170,12 +177,15 @@ export default function TrainingBlockModal({
     return Object.keys(newErrors).length === 0;
   };
   const handleInsert = () => {
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     let block: TrainingBlock;
     if (isJump) {
       block = {
         id: Date.now().toString(),
+        kind: 'jump',
         type: buttonNumber,
         hr: parseInt(hr),
         metric,
@@ -193,6 +203,7 @@ export default function TrainingBlockModal({
     } else {
       block = {
         id: Date.now().toString(),
+        kind: 'normal',
         type: buttonNumber,
         hr: parseInt(hr),
         metric,
@@ -213,7 +224,6 @@ export default function TrainingBlockModal({
     isOpen,
     onClose,
     onConfirm: handleInsert,
-    canConfirm: Object.keys(errors).length === 0,
   });
 
   if (!isOpen) {

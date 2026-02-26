@@ -4,6 +4,7 @@ export interface NormalBlock {
   hr: number;
   rpm: number;
   metric: 'distance' | 'time';
+  kind: 'normal';
   distance?: number;
   time?: number;
 }
@@ -15,6 +16,7 @@ export interface JumpsBlock {
   rpmUp: number;
   rpmDown: number;
   metric: 'distance' | 'time';
+  kind: 'jump';
   distanceUp?: number;
   distanceDown?: number;
   timeUp?: number;

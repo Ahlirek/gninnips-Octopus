@@ -7,8 +7,6 @@ import ControlsBar from './components/ControlsBar.tsx';
 import TitleInputModal from './components/TitleInputModal.tsx';
 import DatePicker from 'react-datepicker';
 import ConfirmationInputModal from './components/ConfirmationModal.tsx';
-import type { newDate } from 'react-datepicker/dist/dist/date_utils.js';
-import { isDate } from 'react-datepicker/dist/dist/date_utils.js';
 
 function App() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
@@ -252,14 +250,10 @@ function App() {
     <div className={styles.appContainer}>
       <div className={styles.previewArea}>
         <PreviewArea
-        // data={trainingData}
-        //           onDataChange={setTrainingData}
-        //           backgroundSrc="/images/fondo.png"
-        //           buttonImages={buttonImages}
+          data={trainingData}
+          onDataChange={setTrainingData}
+          buttonImages={buttonImages}
         />
-        {/* If you want to display the title in PreviewArea, pass it as a prop:
-            <PreviewArea title={title} />
-        */}
       </div>
 
       <div className={styles.controlsBar}>

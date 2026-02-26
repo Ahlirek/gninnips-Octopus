@@ -2,24 +2,24 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    width: 100vw;
-    overflow: hidden;
+    width: 100%;
 }
 
 .previewArea{
     display: flex;
-    flex: 3;
+    flex: 1;
     padding: 1.5rem;
-    flex-shrink: 0; 
+    min-height: 0;
 }
 
 .controlsBar {
     display: flex;
+    flex-shrink: 0; 
     align-items: center;
     border-top: 1px solid #1a252f;
-    padding: 3rem;
-    flex-shrink: 0; 
+    padding: 1rem;
 }
+
 
 .datePickerContainer {
     z-index: 9999;

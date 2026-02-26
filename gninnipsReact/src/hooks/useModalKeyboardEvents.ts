@@ -20,8 +20,11 @@ export function useModalKeyboardEvents({
   useEffect(() => {
     callbacksRef.current = { onClose, onConfirm };
   }, [onClose, onConfirm]);
+
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
     const handleKeyDown = (e: KeyboardEvent) => {
       const { onClose, onConfirm } = callbacksRef.current;
       switch (e.key) {
