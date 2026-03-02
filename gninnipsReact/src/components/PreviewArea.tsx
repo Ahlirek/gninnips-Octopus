@@ -15,26 +15,57 @@ interface PreviewAreaProps {
 
 const IMAGE_WIDTH = 3840;
 const IMAGE_HEIGHT = 2160;
-const CELL_SIZE = 540;
+const CELL_WIDTH = 540; // INFO: 429 ocupados max
+const CELL_HEIGHT = 460; //INFO: 420 ocupados
 const POSITION_IMAGE_SIZE = 270;
+const LOOP_FONT_SIZE = 500;
 const COLS = 7;
-const POS_IMAGE_OFFSET_Y = (CELL_SIZE - POSITION_IMAGE_SIZE) / 2;
-const POS_IMAGE_OFFSET_X = (CELL_SIZE - POSITION_IMAGE_SIZE) * 0.75;
+const ROWS = 4;
+const POS_IMAGE_OFFSET_Y = (CELL_HEIGHT - POSITION_IMAGE_SIZE) / 2;
+const POS_IMAGE_OFFSET_X = (CELL_WIDTH - POSITION_IMAGE_SIZE) * 0.7;
+const IMAGE_MARGIN = (IMAGE_WIDTH - COLS * CELL_WIDTH) / 2;
+const IMAGE_BLOCKS_START_Y = IMAGE_HEIGHT - ROWS * CELL_HEIGHT - IMAGE_MARGIN;
 
-function formatTime(seconds: number): string {
+function formatTime(seconds: number | undefined): string {
+  if (!seconds) {
+    return '';
+  }
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
+function formatTimeDistValue(
+  upValue: number | undefined,
+  downValue: number | undefined,
+  formatType: 'distance' | 'time' | 'rpm',
+): string {
+  let upValueFormatted = '';
+  let downValueFormatted = '';
+  if (formatType === 'distance') {
+    upValueFormatted = formatDistance(upValue);
+    downValueFormatted = formatDistance(downValue);
+  } else if (formatType === 'time') {
+    upValueFormatted = formatTime(upValue);
+    downValueFormatted = formatTime(downValue);
+  } else {
+    upValueFormatted = upValue ? String(upValue) : '';
+    downValueFormatted = downValue ? String(downValue) : '';
+  }
 
-function formatDistance(n: number | undefined) {
-  if (!n) {
-    return 0;
+  if (upValue && downValue) {
+    return `${upValueFormatted}/${downValueFormatted}`;
   }
-  if (n % 1 !== 0) {
-    return n.toFixed(2);
+  return `${upValueFormatted}${downValueFormatted}`;
+}
+
+function formatDistance(distance: number | undefined): string {
+  if (!distance) {
+    return '';
   }
-  return n;
+  if (distance % 1 !== 0) {
+    return distance.toFixed(2);
+  }
+  return String(distance);
 }
 
 function getTextXCenteredInPositionImage(textWidth: number): number {
@@ -87,8 +118,6 @@ export default function PreviewArea({
       const offsetY = (height - scaledHeight) / 2;
       setOffset({ x: offsetX, y: offsetY });
 
-      console.log('Resize observer:', width, height);
-      console.log('Resize ner:', scaledWidth, scaledHeight);
       setStageSize({ width, height });
     });
     resizeObserver.observe(containerRef.current);
@@ -98,8 +127,10 @@ export default function PreviewArea({
   const getCellPosition = (index: number) => {
     const row = Math.floor(index / COLS);
     const col = index % COLS;
-    const offsetX = (IMAGE_WIDTH - COLS * CELL_SIZE) / 2;
-    return { x: offsetX + col * CELL_SIZE, y: row * CELL_SIZE };
+    return {
+      x: IMAGE_MARGIN + col * CELL_WIDTH,
+      y: row * CELL_HEIGHT + IMAGE_BLOCKS_START_Y,
+    };
     // return { x: col * CELL_SIZE, y: row * CELL_SIZE };
   };
 
@@ -110,8 +141,8 @@ export default function PreviewArea({
     const pos = e.target.position();
     console.log('position');
     console.log(e.target.position());
-    const col = Math.round(pos.x / CELL_SIZE); // TODO: Afecta el offset del return de getCellPosition?
-    const row = Math.round(pos.y / CELL_SIZE);
+    const col = Math.round(pos.x / CELL_WIDTH); // TODO: Afecta el offset del return de getCellPosition?
+    const row = Math.round(pos.y / CELL_WIDTH);
     const targetIndex = row * COLS + col;
 
     if (
@@ -157,46 +188,55 @@ export default function PreviewArea({
 
   const renderBlock = (block: TrainingBlock, index: number) => {
     const { x, y } = getCellPosition(index);
-    console.log(x, y);
     const isJump = block.kind === 'jump';
     const img = buttonImages[block.type - 1];
 
-    const hrText = `${block.hr}%`;
+    const hrText = block.hr ? `${block.hr}%` : '';
     let numJumpsText = '';
     let rpmText = '';
     let timeDistText = '';
     if (isJump) {
-      numJumpsText = `${block.jumps}`;
-      rpmText = `${block.rpmUp}/${block.rpmDown}`;
+      numJumpsText = `${block.jumps || ''}`;
+      rpmText = formatTimeDistValue(block.rpmUp, block.rpmDown, 'rpm');
       if (block.metric === 'distance') {
-        timeDistText = `${formatDistance(block.distanceUp)}/${formatDistance(block.distanceDown)}`;
+        timeDistText = formatTimeDistValue(
+          block.distanceUp,
+          block.distanceDown,
+          block.metric,
+        );
       } else {
-        timeDistText = `${formatTime(block.timeUp || 0)}/${formatTime(block.timeDown || 0)}`;
+        timeDistText = formatTimeDistValue(
+          block.timeUp,
+          block.timeDown,
+          block.metric,
+        );
       }
     } else {
       rpmText = `${block.rpm}`;
       if (block.metric === 'distance') {
         timeDistText = `${formatDistance(block.distance)}`;
       } else {
-        timeDistText = formatTime(block.time || 0);
+        timeDistText = formatTime(block.time);
       }
     }
 
-    const hrTextDim = measureText(hrText);
-    const hrX = POS_IMAGE_OFFSET_X - hrTextDim.width;
-    const hrY = (CELL_SIZE - hrTextDim.height) / 2;
+    const hrTextSize = measureText(hrText);
+    const hrX = POS_IMAGE_OFFSET_X - hrTextSize.width;
+    const hrY = (CELL_HEIGHT - hrTextSize.height) / 2;
 
-    const numJumpsTextDim = measureText(numJumpsText);
-    const numJumpsX = getTextXCenteredInPositionImage(numJumpsTextDim.width);
-    const numJumpsY = (CELL_SIZE - numJumpsTextDim.height) / 2;
+    const numJumpsTextSize = measureText(numJumpsText);
+    const numJumpsX = getTextXCenteredInPositionImage(numJumpsTextSize.width);
+    const numJumpsY = (CELL_HEIGHT - numJumpsTextSize.height) / 2;
 
-    const rpmTextDim = measureText(rpmText);
-    const rpmX = getTextXCenteredInPositionImage(rpmTextDim.width);
-    const rpmY = POS_IMAGE_OFFSET_Y - rpmTextDim.height;
+    const rpmTextSize = measureText(rpmText);
+    const rpmX = getTextXCenteredInPositionImage(rpmTextSize.width);
+    const rpmY = POS_IMAGE_OFFSET_Y - rpmTextSize.height;
 
-    const timeDistTextDim = measureText(timeDistText);
-    const timeDistX = getTextXCenteredInPositionImage(timeDistTextDim.width);
+    const timeDistTextSize = measureText(timeDistText);
+    const timeDistX = getTextXCenteredInPositionImage(timeDistTextSize.width);
     const timeDistY = POS_IMAGE_OFFSET_Y + POSITION_IMAGE_SIZE;
+    console.log('x', hrTextSize.width);
+    console.log('y', rpmTextSize.height, timeDistTextSize.height);
 
     return (
       <Group
@@ -207,8 +247,8 @@ export default function PreviewArea({
         onDragEnd={(e) => handleDragEnd(e, index)}
       >
         <Rect
-          width={CELL_SIZE}
-          height={CELL_SIZE}
+          width={CELL_WIDTH}
+          height={CELL_HEIGHT}
           fill="white"
           stroke="black"
           strokeWidth={2}
@@ -236,8 +276,8 @@ export default function PreviewArea({
       <Rect
         x={x}
         y={y}
-        width={CELL_SIZE}
-        height={CELL_SIZE}
+        width={CELL_WIDTH}
+        height={CELL_HEIGHT}
         stroke="red"
         strokeWidth={4}
         dash={[10, 5]}
@@ -246,24 +286,22 @@ export default function PreviewArea({
   };
 
   const renderLoops = () => {
-    const loopFontSize = 500;
     return data.loops.map((loop, i) => {
       const startPos = getCellPosition(loop.start);
       const endPos = getCellPosition(loop.end);
       const xStart = startPos.x - 50;
-      const xEnd = endPos.x + CELL_SIZE - 60;
+      const xEnd = endPos.x + CELL_WIDTH - 60;
       const startLoopText = '[';
       const endLoopText = `]x${loop.repetitions}`;
       const startLoopTextDim = measureText(
         startLoopText,
-        loopFontSize,
+        LOOP_FONT_SIZE,
         FONT_FAMILY,
         'normal',
       );
       //TODO: SI SON VARIOS LOOP HAY QUE MOVER EL X PARA QUE SE VEAN AMBOS
       //TODO:un loop ocupa un espacio de cuadrito
       const y = startPos.y - 10;
-      console.log('y', y, startLoopTextDim.height);
 
       return (
         <Group key={`loop-${i}`}>
@@ -271,7 +309,7 @@ export default function PreviewArea({
             text={startLoopText}
             x={xStart}
             y={y}
-            fontSize={loopFontSize}
+            fontSize={LOOP_FONT_SIZE}
             fontStyle="normal"
             fill="red"
           />
@@ -279,7 +317,7 @@ export default function PreviewArea({
             text={endLoopText}
             x={xEnd}
             y={y}
-            fontSize={loopFontSize}
+            fontSize={LOOP_FONT_SIZE}
             fontStyle="normal"
             fill="red"
           />
@@ -319,24 +357,19 @@ export default function PreviewArea({
         })
       : '--';
     //TODO: CENTRAR TEXTOS
-    const IMAGE_MARGIN = 30; // INFO: ESTO SE CALCULA!
     const infoFontSize = 90;
-    const totalTimeText = `Tt: ${formatTime(totalTime)}`;
+    const titleFontSize = 255;
+    const totalTimeText = `Tt: ${formatTime(totalTime) || '00:00'}`;
     const totalTimeStrSize = measureText(totalTimeText, infoFontSize);
-    const totalDistText = `Dt: ${formatDistance(totalDistance)} km`;
+    const totalDistText = `Dt: ${formatDistance(totalDistance) || 0} km`;
     const totalDistSize = measureText(totalDistText, infoFontSize);
     const maxTimeDistSizeText = Math.max(
       totalTimeStrSize.width,
       totalDistSize.width,
     );
     const infoX = IMAGE_WIDTH - Math.ceil(maxTimeDistSizeText) - IMAGE_MARGIN;
-    console.log(
-      totalDistSize.width,
-      totalTimeStrSize.width,
-      maxTimeDistSizeText,
-      'heh',
-    );
-    console.log('infoX', infoX);
+    const titleSize = measureText(data.title, titleFontSize);
+    console.log('titlesize', titleSize.height);
 
     return (
       //TODO: verificar posicion AQUÏ me quede ver si posiciones en group o en block text
@@ -349,20 +382,15 @@ export default function PreviewArea({
             fontSize={infoFontSize}
           />
         </Group>
-        <Group y={50}>
+        <Group y={IMAGE_MARGIN}>
           <BlockText text={data.title} x={300} y={0} fontSize={255} />
         </Group>
         <Group x={infoX} y={IMAGE_MARGIN}>
-          <BlockText
-            text={totalTimeText}
-            x={0}
-            y={100}
-            fontSize={infoFontSize}
-          />
+          <BlockText text={totalTimeText} x={0} y={0} fontSize={infoFontSize} />
           <BlockText
             text={totalDistText}
             x={0}
-            y={200}
+            y={100} // distancia de la de arriba
             fontSize={infoFontSize}
           />
         </Group>
