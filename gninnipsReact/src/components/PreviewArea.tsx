@@ -420,13 +420,14 @@ export default function PreviewArea({
     const titleStartX = IMAGE_MARGIN + dateStrSize.width + TITLE_PADDING;
     const titleEndX = timeDistStartX - TITLE_PADDING;
     const titleMaxWidth = titleEndX - titleStartX;
+    console.log(IMAGE_MARGIN, 'margin');
 
     return (
       <>
         <Group x={IMAGE_MARGIN} y={IMAGE_MARGIN}>
           <BlockText text={dateStr} fontSize={INFO_FONT_SIZE} />
         </Group>
-        <Group x={titleStartX} y={IMAGE_MARGIN}>
+        <Group x={titleStartX}>
           <BlockText
             text={data.title}
             fontSize={TITLE_FONT_SIZE}
