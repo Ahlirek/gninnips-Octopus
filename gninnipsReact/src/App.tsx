@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useRef,
+  useLayoutEffect,
+} from 'react';
 import styles from './App.module.css';
 import TrainingBlockModal from './components/TrainingBlockModal.tsx';
 import type { TrainingData, TrainingBlock, Loop } from './types.ts';
@@ -12,6 +18,9 @@ import { IMAGE_WIDTH, IMAGE_HEIGHT } from './constants/image.ts';
 
 function App() {
   const imageRef = useRef<Konva.Stage>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isSumTimeVisible, setIsSumTimeVisible] = useState(true);
+  const [exportMode, setExportMode] = useState(false);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
     null,
@@ -206,7 +215,7 @@ function App() {
   }, []);
 
   const handleSumTime = useCallback(() => {
-    console.log('Sum Time Clicked');
+    setIsSumTimeVisible((prev) => !prev);
   }, []);
 
   const handleLeft = useCallback(() => {
@@ -226,14 +235,55 @@ function App() {
   }, []);
 
   const handleLoadTraining = useCallback(() => {
-    console.log('Load Training Clicked');
+    fileInputRef.current?.click();
   }, []);
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const loadedData = JSON.parse(content) as TrainingData;
+
+        if (loadedData.date) {
+          loadedData.date = new Date(loadedData.date);
+        }
+
+        setTrainingData(loadedData);
+        console.log('Training loaded successfully');
+      } catch (error) {
+        console.error('Failed to load training file:', error);
+        alert('Invalid training file');
+      } finally {
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const handleDownloadTraining = useCallback(() => {
-    console.log('Download Training Clicked');
+    if (exportMode) {
+      return;
+    }
+    setExportMode(true);
+  }, [exportMode]);
+
+  useLayoutEffect(() => {
+    if (!exportMode) {
+      return;
+    }
+
     const image = imageRef.current;
     if (!image) {
-      console.log('bu');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setExportMode(false);
       return;
     }
 
@@ -257,12 +307,23 @@ function App() {
           year: '2-digit',
         })
       : '--';
-
     const link = document.createElement('a');
     link.download = `${dateStr}.png`;
     link.href = uri;
     link.click();
-  }, [trainingData.date]);
+
+    const jsonBlob = new Blob([JSON.stringify(trainingData, null, 2)], {
+      type: 'application/json',
+    });
+    const jsonUrl = URL.createObjectURL(jsonBlob);
+    const jsonLink = document.createElement('a');
+    jsonLink.download = `${dateStr}.json`;
+    jsonLink.href = jsonUrl;
+    jsonLink.click();
+    URL.revokeObjectURL(jsonUrl);
+
+    setExportMode(false);
+  }, [exportMode, trainingData]);
 
   const handleReorder = useCallback(
     (newBlocks: TrainingBlock[], newLoops: Loop[]) => {
@@ -289,6 +350,8 @@ function App() {
           onDataChange={setTrainingData}
           buttonImages={buttonImages}
           imageRef={imageRef}
+          isSumTimeVisible={isSumTimeVisible}
+          exportMode={exportMode}
         />
       </div>
 
@@ -366,6 +429,13 @@ function App() {
           optional={trainingModalState.buttonIndex === 9}
         />
       )}
+      <input
+        type="file"
+        accept=".json,application/json"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
     </div>
   );
 }

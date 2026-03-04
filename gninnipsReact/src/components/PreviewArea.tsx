@@ -4,7 +4,7 @@ import type { NormalBlock, JumpsBlock, TrainingBlock, Loop } from '../types';
 import type { TrainingData } from '../types';
 import { Stage, Layer, Image, Rect, Text, Group, Line } from 'react-konva';
 import Konva from 'konva';
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useLayoutEffect, useMemo } from 'react';
 import { FONT_SIZE, FONT_FAMILY, FONT_STYLE } from '../constants/theme';
 import { IMAGE_WIDTH, IMAGE_HEIGHT } from '../constants/image';
 
@@ -13,6 +13,8 @@ interface PreviewAreaProps {
   onDataChange: (data: TrainingData) => void;
   buttonImages: HTMLImageElement[];
   imageRef: React.Ref<Konva.Group>;
+  isSumTimeVisible: boolean;
+  exportMode: boolean;
 }
 
 const CELL_WIDTH = 540; // INFO: 429 ocupados max
@@ -21,7 +23,7 @@ const POSITION_IMAGE_SIZE = 270;
 const LOOP_FONT_SIZE = 500;
 const COLS = 7;
 const ROWS = 4;
-const TITLE_FONT_SIZE = 255;
+const TITLE_FONT_SIZE = 250;
 const INFO_FONT_SIZE = 90;
 const TITLE_PADDING = 30;
 const CUMULATIVE_FONT_SIZE = 55;
@@ -127,6 +129,8 @@ export default function PreviewArea({
   onDataChange,
   buttonImages,
   imageRef,
+  isSumTimeVisible,
+  exportMode,
 }: PreviewAreaProps) {
   const stageRef = useRef<Konva.Stage>(null);
   const divRef = useRef<HTMLDivElement>(null);
@@ -154,7 +158,7 @@ export default function PreviewArea({
     };
   }, [data.blocks]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!divRef.current) {
       return;
     }
@@ -334,18 +338,23 @@ export default function PreviewArea({
         <BlockText text={rpmText} x={rpmX} y={rpmY} />
         <BlockText text={numJumpsText} x={numJumpsX} y={numJumpsY} />
         <BlockText text={timeDistText} x={timeDistX} y={timeDistY} />
-        <BlockText
-          text={cumulativeText}
-          x={xNext + 7}
-          y={yNext + 10}
-          fontSize={CUMULATIVE_FONT_SIZE}
-          fill={block.metric === 'time' ? TIME_COLOR : DISTANCE_COLOR}
-        />
+        {isSumTimeVisible && (
+          <BlockText
+            text={cumulativeText}
+            x={xNext + 7}
+            y={yNext + 10}
+            fontSize={CUMULATIVE_FONT_SIZE}
+            fill={block.metric === 'time' ? TIME_COLOR : DISTANCE_COLOR}
+          />
+        )}
       </Group>
     );
   };
 
   const renderCursor = () => {
+    if (exportMode) {
+      return null;
+    }
     const { x, y } = getCellPosition(data.cursor);
     return (
       <Rect
@@ -420,7 +429,6 @@ export default function PreviewArea({
     const titleStartX = IMAGE_MARGIN + dateStrSize.width + TITLE_PADDING;
     const titleEndX = timeDistStartX - TITLE_PADDING;
     const titleMaxWidth = titleEndX - titleStartX;
-    console.log(IMAGE_MARGIN, 'margin');
 
     return (
       <>
@@ -470,8 +478,8 @@ export default function PreviewArea({
               width={IMAGE_WIDTH}
               height={IMAGE_HEIGHT}
               fill="white"
-              stroke="black"
-              strokeWidth={5}
+              stroke={exportMode ? undefined : 'black'}
+              strokeWidth={exportMode ? 0 : 5}
             />
             {renderInfo()}
             {renderCursor()}
