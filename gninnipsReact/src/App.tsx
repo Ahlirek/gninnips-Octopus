@@ -14,7 +14,6 @@ import TitleInputModal from './components/TitleInputModal.tsx';
 import DatePicker from 'react-datepicker';
 import ConfirmationInputModal from './components/ConfirmationModal.tsx';
 import Konva from 'konva';
-import { IMAGE_WIDTH, IMAGE_HEIGHT } from './constants/image.ts';
 
 function App() {
   const imageRef = useRef<Konva.Stage>(null);
@@ -44,13 +43,20 @@ function App() {
     title: '',
   });
 
+  // const [trainingModalState, setTrainingModalState] = useState<{
+  //   open: boolean;
+  //   buttonIndex: number;
+  // }>({
+  //   open: false,
+  //   buttonIndex: -1,
+  // });
   const [trainingModalState, setTrainingModalState] = useState<{
-    open: boolean;
-    buttonIndex: number;
-  }>({
-    open: false,
-    buttonIndex: -1,
-  });
+    mode: 'insert' | 'edit';
+    blockType: number;
+    block?: TrainingBlock;
+    index?: number;
+    position?: number;
+  } | null>(null);
 
   const [buttonImages, setButtonImages] = useState<HTMLImageElement[]>([]);
 
@@ -68,9 +74,7 @@ function App() {
     const loadAll = async () => {
       try {
         const images = await Promise.all(
-          Array.from({ length: 10 }, (_, i) =>
-            loadImage(`/images/${i + 1}.png`),
-          ),
+          Array.from({ length: 10 }, (_, i) => loadImage(`/images/${i}.png`)),
         );
         if (isMounted) {
           setButtonImages(images);
@@ -85,30 +89,105 @@ function App() {
     };
   }, []);
 
-  const handleImageButtonClick = useCallback((index: number) => {
-    console.log(`Selected image ${index + 1}`);
-    setSelectedImageIndex(index);
-    setTrainingModalState({ open: true, buttonIndex: index });
+  const handleImageButtonClick = useCallback(
+    (blockType: number) => {
+      console.log(`Selected image ${blockType + 1}`);
+      setSelectedImageIndex(blockType);
+      // setTrainingModalState({ open: true, buttonIndex: index });
+      setTrainingModalState({
+        mode: 'insert',
+        blockType,
+        position: trainingData.cursor + 1,
+      });
+    },
+    [trainingData.cursor],
+  );
+
+  const handleEditBlock = useCallback((index: number, block: TrainingBlock) => {
+    setTrainingModalState({
+      mode: 'edit',
+      blockType: block.type,
+      block,
+      index,
+      position: index + 1,
+    });
   }, []);
 
-  const handleInsertBlock = useCallback((block: TrainingBlock) => {
-    setTrainingData((prev) => {
-      const newBlocks = [...prev.blocks];
-      newBlocks.splice(prev.cursor, 0, block);
-      const newLoops = prev.loops.map((loop) => ({
-        start: loop.start >= prev.cursor ? loop.start + 1 : loop.start,
-        end: loop.end >= prev.cursor ? loop.end + 1 : loop.end,
-        repetitions: loop.repetitions,
-      }));
-      return {
-        ...prev,
-        blocks: newBlocks,
-        loops: newLoops,
-        cursor: prev.cursor + 1,
-      };
-    });
-    setTrainingModalState({ open: false, buttonIndex: -1 });
-  }, []);
+  const handleInsertBlockAtPosition = useCallback(
+    (block: TrainingBlock, insertIndex: number) => {
+      setTrainingData((prev) => {
+        if (insertIndex < 0 || insertIndex > prev.blocks.length) {
+          return prev;
+        }
+        const newBlocks = [...prev.blocks];
+        newBlocks.splice(insertIndex, 0, block);
+        const newLoops = prev.loops.map((loop) => ({
+          start: loop.start >= insertIndex ? loop.start + 1 : loop.start,
+          end: loop.end >= insertIndex ? loop.end + 1 : loop.end,
+          repetitions: loop.repetitions,
+        }));
+        return {
+          ...prev,
+          blocks: newBlocks,
+          loops: newLoops,
+          cursor: insertIndex + 1,
+        };
+      });
+    },
+    [],
+  );
+
+  const handleUpdateBlock = useCallback(
+    (oldIndex: number, newBlock: TrainingBlock, newIndex: number) => {
+      setTrainingData((prev) => {
+        // Remove old block
+        const blocksAfterRemove = prev.blocks.filter((_, i) => i !== oldIndex);
+        const loopsAfterRemove = prev.loops
+          .map((loop) => ({
+            start: loop.start > oldIndex ? loop.start - 1 : loop.start,
+            end: loop.end > oldIndex ? loop.end - 1 : loop.end,
+            repetitions: loop.repetitions,
+          }))
+          .filter((loop) => loop.start < loop.end); // WARN: REVISAR ESTE FILTER
+
+        const insertIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
+
+        const newBlocks = [...blocksAfterRemove];
+        newBlocks.splice(insertIndex, 0, newBlock);
+
+        const newLoops = loopsAfterRemove.map((loop) => ({
+          start: loop.start >= insertIndex ? loop.start + 1 : loop.start,
+          end: loop.end >= insertIndex ? loop.end + 1 : loop.end,
+          repetitions: loop.repetitions,
+        }));
+
+        return {
+          ...prev,
+          blocks: newBlocks,
+          loops: newLoops,
+          cursor: newIndex + 1,
+        };
+      });
+    },
+    [],
+  );
+
+  // why trainingModalState.index should not be undefined?
+  const handleSaveBlock = useCallback(
+    (block: TrainingBlock, position: number) => {
+      const positionIndex = position - 1;
+      if (
+        trainingModalState?.mode === 'edit' &&
+        trainingModalState.index !== undefined
+      ) {
+        handleUpdateBlock(trainingModalState.index, block, positionIndex);
+      } else if (trainingModalState?.mode === 'insert') {
+        handleInsertBlockAtPosition(block, positionIndex);
+      }
+      setTrainingModalState(null);
+    },
+    [trainingModalState, handleUpdateBlock, handleInsertBlockAtPosition],
+  );
 
   const handleOpenTitleModal = useCallback(() => {
     setIsTitleModalOpen(true);
@@ -282,7 +361,6 @@ function App() {
 
     const image = imageRef.current;
     if (!image) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setExportMode(false);
       return;
     }
@@ -340,7 +418,7 @@ function App() {
     isTitleModalOpen ||
     isConfirmationModalOpen ||
     isDatePickerOpen ||
-    trainingModalState.open;
+    !!trainingModalState;
 
   return (
     <div className={styles.appContainer}>
@@ -352,6 +430,7 @@ function App() {
           imageRef={imageRef}
           isSumTimeVisible={isSumTimeVisible}
           exportMode={exportMode}
+          onEditBlock={handleEditBlock}
         />
       </div>
 
@@ -416,17 +495,19 @@ function App() {
         </div>
       )}
 
-      {trainingModalState.open && (
+      {trainingModalState && (
         <TrainingBlockModal
-          key={trainingModalState.buttonIndex}
-          isOpen={trainingModalState.open}
-          onClose={() =>
-            setTrainingModalState({ open: false, buttonIndex: -1 })
-          }
-          onInsert={handleInsertBlock}
-          buttonNumber={trainingModalState.buttonIndex + 1}
-          buttonImage={buttonImages[trainingModalState.buttonIndex]}
-          optional={trainingModalState.buttonIndex === 9}
+          key={trainingModalState.blockType}
+          isOpen={!!trainingModalState}
+          onClose={() => setTrainingModalState(null)}
+          onSave={handleSaveBlock}
+          mode={trainingModalState.mode}
+          blockType={trainingModalState.blockType}
+          buttonImage={buttonImages[trainingModalState.blockType]}
+          optional={trainingModalState.blockType === 0}
+          initialBlock={trainingModalState.block}
+          initialPosition={trainingModalState.position}
+          totalBlocks={trainingData.blocks.length}
         />
       )}
       <input

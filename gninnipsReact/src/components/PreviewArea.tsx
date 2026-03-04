@@ -1,8 +1,8 @@
 import styles from './PreviewArea.module.css';
 import { BlockText } from './BlockText';
-import type { NormalBlock, JumpsBlock, TrainingBlock, Loop } from '../types';
+import type { TrainingBlock } from '../types';
 import type { TrainingData } from '../types';
-import { Stage, Layer, Image, Rect, Text, Group, Line } from 'react-konva';
+import { Stage, Layer, Image, Rect, Group } from 'react-konva';
 import Konva from 'konva';
 import { useRef, useState, useLayoutEffect, useMemo } from 'react';
 import { FONT_SIZE, FONT_FAMILY, FONT_STYLE } from '../constants/theme';
@@ -15,6 +15,7 @@ interface PreviewAreaProps {
   imageRef: React.Ref<Konva.Group>;
   isSumTimeVisible: boolean;
   exportMode: boolean;
+  onEditBlock?: (index: number, block: TrainingBlock) => void;
 }
 
 const CELL_WIDTH = 540; // INFO: 429 ocupados max
@@ -131,6 +132,7 @@ export default function PreviewArea({
   imageRef,
   isSumTimeVisible,
   exportMode,
+  onEditBlock,
 }: PreviewAreaProps) {
   const stageRef = useRef<Konva.Stage>(null);
   const divRef = useRef<HTMLDivElement>(null);
@@ -243,7 +245,7 @@ export default function PreviewArea({
   const renderBlock = (block: TrainingBlock, index: number) => {
     const { x, y } = getCellPosition(index);
     const isJump = block.kind === 'jump';
-    const img = buttonImages[block.type - 1];
+    const img = buttonImages[block.type];
 
     const { x: x2, y: y2 } = getCellPosition(index + 1);
     const xNext = x2 - x;
@@ -319,6 +321,7 @@ export default function PreviewArea({
         y={y}
         draggable
         onDragEnd={(e) => handleDragEnd(e, index)}
+        onDblClick={() => onEditBlock?.(index, block)}
       >
         <Rect
           width={CELL_WIDTH}

@@ -75,16 +75,16 @@ export default function ControlsBar({
 
   useKeyboardShorcuts(
     {
-      '1': { handler: () => onImageButtonClick(0) },
-      '2': { handler: () => onImageButtonClick(1) },
-      '3': { handler: () => onImageButtonClick(2) },
-      '4': { handler: () => onImageButtonClick(3) },
-      '5': { handler: () => onImageButtonClick(4) },
-      '6': { handler: () => onImageButtonClick(5) },
-      '7': { handler: () => onImageButtonClick(6) },
-      '8': { handler: () => onImageButtonClick(7) },
-      '9': { handler: () => onImageButtonClick(8) },
-      '0': { handler: () => onImageButtonClick(9) },
+      '1': { handler: () => onImageButtonClick(1) },
+      '2': { handler: () => onImageButtonClick(2) },
+      '3': { handler: () => onImageButtonClick(3) },
+      '4': { handler: () => onImageButtonClick(4) },
+      '5': { handler: () => onImageButtonClick(5) },
+      '6': { handler: () => onImageButtonClick(6) },
+      '7': { handler: () => onImageButtonClick(7) },
+      '8': { handler: () => onImageButtonClick(8) },
+      '9': { handler: () => onImageButtonClick(9) },
+      '0': { handler: () => onImageButtonClick(0) },
       t: { handler: onOpenTitleModal },
       f: {
         handler: () => {
@@ -162,10 +162,10 @@ export default function ControlsBar({
 
   const buttonConfigs = Array.from({ length: TOTAL_BUTTONS }, (_, index) => {
     if (index < IMAGES_LENGTH) {
-      const displayIndex = (index + 1) % IMAGES_LENGTH;
+      const displayIndex = index % IMAGES_LENGTH;
       return {
         type: 'image' as const,
-        imgSrc: `/images/${index + 1}.png`,
+        imgSrc: `/images/${index}.png`,
         text: `Posición [${displayIndex}]`,
         key: `img-${index}`,
         title: `Shorcut: ${displayIndex}`,

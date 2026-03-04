@@ -7,10 +7,14 @@ import { useState } from 'react';
 interface TrainingBlockModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onInsert: (block: TrainingBlock) => void;
-  buttonNumber: number;
+  onSave: (block: TrainingBlock, position: number) => void;
+  mode: 'insert' | 'edit';
+  blockType: number;
   buttonImage?: HTMLImageElement | null;
   optional?: boolean;
+  initialBlock?: TrainingBlock; // para que sirve?
+  initialPosition?: number; // para que sirve?
+  totalBlocks?: number;
 }
 
 const HR_LOWER_LIMIT = 50;
@@ -62,12 +66,18 @@ function secondsToTime(seconds: number): string {
 export default function TrainingBlockModal({
   isOpen,
   onClose,
-  onInsert,
-  buttonNumber,
+  onSave,
+  mode,
+  blockType,
   buttonImage,
   optional = false,
+  initialBlock,
+  initialPosition,
+  totalBlocks = 0,
 }: TrainingBlockModalProps) {
-  const isJump = [5, 7, 10].includes(buttonNumber);
+  const isJump = [5, 7, 0].includes(blockType);
+
+  const [position, setPosition] = useState<number>(initialPosition || 1);
 
   const [hr, setHr] = useState('');
   const [metric, setMetric] = useState<'distance' | 'time'>('time');
@@ -186,7 +196,7 @@ export default function TrainingBlockModal({
       block = {
         id: Date.now().toString(),
         kind: 'jump',
-        type: buttonNumber,
+        type: blockType,
         hr: parseInt(hr),
         metric,
         rpmUp: parseInt(rpmUp),
@@ -204,7 +214,7 @@ export default function TrainingBlockModal({
       block = {
         id: Date.now().toString(),
         kind: 'normal',
-        type: buttonNumber,
+        type: blockType,
         hr: parseInt(hr),
         metric,
         rpm: parseInt(rpm),
@@ -235,10 +245,13 @@ export default function TrainingBlockModal({
       onClose();
     }
   };
+  const position = 10;
+  const maxPos = 8;
+  const setPosition = (e) => {};
   return (
     <div className={modalStyles.overlay} onClick={handleOverlayClick}>
       <div className={`${modalStyles.modalContainer} ${styles.modalContainer}`}>
-        <h2>Posición {buttonNumber}</h2>
+        <h2>Posición {blockType}</h2>
 
         <div className={styles.rpmRow}>
           {isJump ? (
@@ -305,7 +318,7 @@ export default function TrainingBlockModal({
               <div className={styles.imageWrapper}>
                 <img
                   src={buttonImage.src}
-                  alt={`Botón ${buttonNumber}`}
+                  alt={`Botón ${blockType}`}
                   className={styles.buttonImage}
                 />
               </div>
@@ -411,6 +424,20 @@ export default function TrainingBlockModal({
               <span className={styles.error}>{errors.timeDistValue || ''}</span>
             </div>
           )}
+        </div>
+
+        <div className={styles.blockOrderRow}>
+          <div className={styles.fieldGroup}>
+            <label># Bloque:</label>
+            <input
+              type="number"
+              value={position}
+              onChange={(e) => setPosition(parseInt(e.target.value) || 1)}
+              min={1}
+              max={maxPos}
+            />
+            <span className={styles.error}>{errors.position || ''}</span>
+          </div>
         </div>
 
         <div className={styles.actions}>
