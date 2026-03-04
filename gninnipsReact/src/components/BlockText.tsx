@@ -3,12 +3,18 @@ import { Text } from 'react-konva';
 
 interface BlockTextProps {
   text: string;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
   fontSize?: number;
   fontFamily?: string;
   fontStyle?: string;
   fill?: string;
+  width?: number;
+  height?: number;
+  align?: string;
+  verticalAlign?: string;
+  ellipsis?: boolean;
+  wrap?: string;
 }
 
 export function BlockText({
@@ -18,7 +24,13 @@ export function BlockText({
   fontSize = FONT_SIZE,
   fontFamily = FONT_FAMILY,
   fontStyle = FONT_STYLE,
-  fill = 'black',
+  fill,
+  width,
+  height,
+  align,
+  verticalAlign,
+  ellipsis,
+  wrap,
 }: BlockTextProps) {
   return (
     <Text
@@ -29,6 +41,12 @@ export function BlockText({
       fontFamily={fontFamily}
       fontStyle={fontStyle}
       fill={fill}
+      width={width}
+      height={height}
+      align={align}
+      verticalAlign={verticalAlign}
+      ellipsis={ellipsis}
+      wrap={wrap}
     />
   );
 }

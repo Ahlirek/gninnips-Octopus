@@ -176,11 +176,11 @@ export default function TrainingBlockModal({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleInsert = () => {
     if (!validate()) {
       return;
     }
-
     let block: TrainingBlock;
     if (isJump) {
       block = {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import styles from './App.module.css';
 import TrainingBlockModal from './components/TrainingBlockModal.tsx';
 import type { TrainingData, TrainingBlock, Loop } from './types.ts';
@@ -7,8 +7,12 @@ import ControlsBar from './components/ControlsBar.tsx';
 import TitleInputModal from './components/TitleInputModal.tsx';
 import DatePicker from 'react-datepicker';
 import ConfirmationInputModal from './components/ConfirmationModal.tsx';
+import Konva from 'konva';
+import { IMAGE_WIDTH, IMAGE_HEIGHT } from './constants/image.ts';
 
 function App() {
+  const imageRef = useRef<Konva.Stage>(null);
+
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
     null,
   );
@@ -227,7 +231,38 @@ function App() {
 
   const handleDownloadTraining = useCallback(() => {
     console.log('Download Training Clicked');
-  }, []);
+    const image = imageRef.current;
+    if (!image) {
+      console.log('bu');
+      return;
+    }
+
+    const oldPos = image.position();
+    const oldScale = image.scale();
+
+    image.position({ x: 0, y: 0 });
+    image.scale({ x: 1, y: 1 });
+
+    const uri = image.toDataURL({
+      pixelRatio: 1,
+    });
+
+    image.position(oldPos);
+    image.scale(oldScale);
+
+    const dateStr = trainingData.date
+      ? trainingData.date.toLocaleDateString('es-MX', {
+          day: '2-digit',
+          month: '2-digit',
+          year: '2-digit',
+        })
+      : '--';
+
+    const link = document.createElement('a');
+    link.download = `${dateStr}.png`;
+    link.href = uri;
+    link.click();
+  }, [trainingData.date]);
 
   const handleReorder = useCallback(
     (newBlocks: TrainingBlock[], newLoops: Loop[]) => {
@@ -253,6 +288,7 @@ function App() {
           data={trainingData}
           onDataChange={setTrainingData}
           buttonImages={buttonImages}
+          imageRef={imageRef}
         />
       </div>
 
