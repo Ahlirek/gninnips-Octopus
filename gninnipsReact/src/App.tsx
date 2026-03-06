@@ -1,3 +1,5 @@
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import {
   useCallback,
   useEffect,
@@ -425,103 +427,107 @@ function App() {
     !!trainingModalState;
 
   return (
-    <div className={styles.appContainer}>
-      <div className={styles.previewArea}>
-        <PreviewArea
-          data={trainingData}
-          onDataChange={setTrainingData}
-          buttonImages={buttonImages}
-          imageRef={imageRef}
-          isSumTimeVisible={isSumTimeVisible}
-          exportMode={exportMode}
-          onEditBlock={handleEditBlock}
-        />
-      </div>
-
-      <div className={styles.controlsBar}>
-        <ControlsBar
-          onImageButtonClick={handleImageButtonClick}
-          onOpenTitleModal={handleOpenTitleModal}
-          onOpenDatePicker={handleOpenDatePicker}
-          onOpenConfirmationModal={() => setIsConfirmationModalOpen(true)}
-          onDelete={handleDelete}
-          onRep={handleNumberInputValue}
-          onLoop={handleLoop}
-          onSumTime={handleSumTime}
-          onLeft={handleLeft}
-          onRight={handleRight}
-          onLoadTraining={handleLoadTraining}
-          onDownloadTraining={handleDownloadTraining}
-          shorcutsDisabled={isAnyModalOpen}
-        />
-      </div>
-
-      <TitleInputModal
-        key={`modal-${isTitleModalOpen ? 'open' : 'closed'}`}
-        isOpen={isTitleModalOpen}
-        onClose={handleTitleModalClose}
-        onSave={handleTitleSave}
-      />
-
-      <ConfirmationInputModal
-        isOpen={isConfirmationModalOpen}
-        onClose={handleCancelClear}
-        onConfirm={handleConfirmClear}
-        title="Confirmar Limpieza"
-        message="¿Estás seguro de que deseas limpiar?\nEsta acción no se puede deshacer."
-        confirmText="Limpiar"
-        cancelText="Cancelar"
-        icon="🗑️"
-      />
-
-      {isDatePickerOpen && (
-        <div
-          className={styles.datePickerContainer}
-          style={{
-            position: 'fixed',
-            top: `${datePickerPosition.top}px`,
-            left: `${datePickerPosition.left}px`,
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              setIsDatePickerOpen(false);
-            }
-          }}
-          tabIndex={-1}
-          ref={(el) => el?.focus()}
-        >
-          <DatePicker
-            selected={trainingData.date}
-            onChange={handleDateChange}
-            inline
-            onClickOutside={handleClickOutsideDatePicker}
+    <>
+      <div className={styles.appContainer}>
+        <div className={styles.previewArea}>
+          <PreviewArea
+            data={trainingData}
+            onDataChange={setTrainingData}
+            buttonImages={buttonImages}
+            imageRef={imageRef}
+            isSumTimeVisible={isSumTimeVisible}
+            exportMode={exportMode}
+            onEditBlock={handleEditBlock}
           />
         </div>
-      )}
 
-      {trainingModalState && (
-        <TrainingBlockModal
-          key={trainingModalState.blockType}
-          isOpen={!!trainingModalState}
-          onClose={() => setTrainingModalState(null)}
-          onSave={handleSaveBlock}
-          mode={trainingModalState.mode}
-          blockType={trainingModalState.blockType}
-          buttonImage={buttonImages[trainingModalState.blockType]}
-          optional={trainingModalState.blockType === 0}
-          initialBlock={trainingModalState.block}
-          initialPosition={trainingModalState.position}
-          totalBlocks={trainingData.blocks.length}
+        <div className={styles.controlsBar}>
+          <ControlsBar
+            onImageButtonClick={handleImageButtonClick}
+            onOpenTitleModal={handleOpenTitleModal}
+            onOpenDatePicker={handleOpenDatePicker}
+            onOpenConfirmationModal={() => setIsConfirmationModalOpen(true)}
+            onDelete={handleDelete}
+            onRep={handleNumberInputValue}
+            onLoop={handleLoop}
+            onSumTime={handleSumTime}
+            onLeft={handleLeft}
+            onRight={handleRight}
+            onLoadTraining={handleLoadTraining}
+            onDownloadTraining={handleDownloadTraining}
+            shorcutsDisabled={isAnyModalOpen}
+          />
+        </div>
+
+        <TitleInputModal
+          key={`modal-${isTitleModalOpen ? 'open' : 'closed'}`}
+          isOpen={isTitleModalOpen}
+          onClose={handleTitleModalClose}
+          onSave={handleTitleSave}
         />
-      )}
-      <input
-        type="file"
-        accept=".json,application/json"
-        ref={fileInputRef}
-        style={{ display: 'none' }}
-        onChange={handleFileChange}
-      />
-    </div>
+
+        <ConfirmationInputModal
+          isOpen={isConfirmationModalOpen}
+          onClose={handleCancelClear}
+          onConfirm={handleConfirmClear}
+          title="Confirmar Limpieza"
+          message="¿Estás seguro de que deseas limpiar?\nEsta acción no se puede deshacer."
+          confirmText="Limpiar"
+          cancelText="Cancelar"
+          icon="🗑️"
+        />
+
+        {isDatePickerOpen && (
+          <div
+            className={styles.datePickerContainer}
+            style={{
+              position: 'fixed',
+              top: `${datePickerPosition.top}px`,
+              left: `${datePickerPosition.left}px`,
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setIsDatePickerOpen(false);
+              }
+            }}
+            tabIndex={-1}
+            ref={(el) => el?.focus()}
+          >
+            <DatePicker
+              selected={trainingData.date}
+              onChange={handleDateChange}
+              inline
+              onClickOutside={handleClickOutsideDatePicker}
+            />
+          </div>
+        )}
+
+        {trainingModalState && (
+          <TrainingBlockModal
+            key={trainingModalState.blockType}
+            isOpen={!!trainingModalState}
+            onClose={() => setTrainingModalState(null)}
+            onSave={handleSaveBlock}
+            mode={trainingModalState.mode}
+            blockType={trainingModalState.blockType}
+            buttonImage={buttonImages[trainingModalState.blockType]}
+            optional={trainingModalState.blockType === 0}
+            initialBlock={trainingModalState.block}
+            initialPosition={trainingModalState.position}
+            totalBlocks={trainingData.blocks.length}
+          />
+        )}
+        <input
+          type="file"
+          accept=".json,application/json"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+      </div>
+      <Analytics />
+      <SpeedInsights />
+    </>
   );
 }
 
