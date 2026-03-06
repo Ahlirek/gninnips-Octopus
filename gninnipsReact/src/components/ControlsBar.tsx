@@ -18,6 +18,8 @@ interface ControlsBarProps {
   onLoadTraining: () => void;
   onDownloadTraining: () => void;
   shorcutsDisabled: boolean;
+  onEditCurrent: () => void;
+  canEdit: boolean;
 }
 
 const IMAGES_LENGTH = 10;
@@ -31,6 +33,7 @@ const DELETE_BUTTON_TEXT = 'Borrar';
 const LOOP_BUTTON_TEXT = '[C]iclo';
 const REPETITIONS_BUTTON_TEXT = '[R]epeticiones';
 const SUM_TIME_BUTON_TEXT = '[S]umatoria Tiempo';
+const EDIT_BUTTON_TEXT = '[E]dit';
 const LEFT_BUTTON_TEXT = 'Izquierda';
 const RIGHT_BUTTON_TEXT = 'Derecha';
 const LOAD_TRAINING_BUTTON_TEXT = 'Cargar Entrenamiento';
@@ -44,7 +47,7 @@ const emojisData = [
   ['［ ］', LOOP_BUTTON_TEXT, 'C'],
   ['X ❓', REPETITIONS_BUTTON_TEXT, 'R'],
   ['⏱️➕', SUM_TIME_BUTON_TEXT, 'S'],
-  ['', ''],
+  ['✏️', EDIT_BUTTON_TEXT, 'E'],
   ['⬅️', LEFT_BUTTON_TEXT, 'Flecha Izquierda'],
   ['➡️', RIGHT_BUTTON_TEXT, 'Flecha Derecha'],
   ['📎', LOAD_TRAINING_BUTTON_TEXT, 'U'],
@@ -65,6 +68,8 @@ export default function ControlsBar({
   onLoadTraining,
   onDownloadTraining,
   shorcutsDisabled = false,
+  onEditCurrent,
+  canEdit,
 }: ControlsBarProps) {
   const fechaButtonRef = useRef<HTMLButtonElement>(null);
   const [isNumberInputVisible, setIsNumberInputVisible] = useState(false);
@@ -102,8 +107,9 @@ export default function ControlsBar({
       s: { handler: onSumTime },
       arrowleft: { handler: onLeft, options: { preventDefault: true } },
       arrowright: { handler: onRight, options: { preventDefault: true } },
+      e: { handler: onEditCurrent },
       u: { handler: onLoadTraining },
-      g: { handler: onDownloadTraining },
+      d: { handler: onDownloadTraining },
     },
     shorcutsDisabled,
   );
@@ -145,6 +151,9 @@ export default function ControlsBar({
           break;
         case RIGHT_BUTTON_TEXT:
           onRight();
+          break;
+        case EDIT_BUTTON_TEXT:
+          onEditCurrent();
           break;
         case LOAD_TRAINING_BUTTON_TEXT:
           onLoadTraining();
@@ -217,6 +226,7 @@ export default function ControlsBar({
             data-button-text={el.text}
             onClick={() => handleButtonClick(index, el.type, el.text)}
             title={el.title}
+            disabled={el.text === EDIT_BUTTON_TEXT && !canEdit}
             {...(el.text === DATE_BUTTON_TEXT ? { ref: fechaButtonRef } : {})}
           />
         );

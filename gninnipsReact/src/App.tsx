@@ -105,6 +105,20 @@ function App() {
     [trainingData.cursor],
   );
 
+  const canEdit = trainingData.cursor < trainingData.blocks.length;
+  const handleEditCurrent = useCallback(() => {
+    const block = trainingData.blocks[trainingData.cursor];
+    if (!block) {
+      return;
+    }
+    setTrainingModalState({
+      mode: 'edit',
+      blockType: block.type,
+      block,
+      index: trainingData.cursor,
+    });
+  }, [trainingData.blocks, trainingData.cursor]);
+
   const handleEditBlock = useCallback((index: number, block: TrainingBlock) => {
     setTrainingModalState({
       mode: 'edit',
@@ -451,6 +465,8 @@ function App() {
             onLoadTraining={handleLoadTraining}
             onDownloadTraining={handleDownloadTraining}
             shorcutsDisabled={isAnyModalOpen}
+            onEditCurrent={handleEditCurrent}
+            canEdit={canEdit}
           />
         </div>
 
