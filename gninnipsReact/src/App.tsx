@@ -21,9 +21,11 @@ function App() {
   const [isSumTimeVisible, setIsSumTimeVisible] = useState(true);
   const [exportMode, setExportMode] = useState(false);
 
+  // @ts-expect-error: suppressing unused variable for now
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
     null,
   );
+  // @ts-expect-error: suppressing unused variable for now
   const [numberInputValue, setNumberInputValue] = useState<number | null>(null);
 
   const [isTitleModalOpen, setIsTitleModalOpen] = useState(false);
@@ -274,6 +276,7 @@ function App() {
 
   // WARN: This is wrong should update the more inner loop where the coursor is
   // probably this is substitution/repetition of handleNumberInputValue
+  // @ts-expect-error: suppressing unused variable for now
   const handleRep = useCallback((reps: number) => {
     setTrainingData((prev) => {
       if (prev.loops.length === 0) {
@@ -403,6 +406,7 @@ function App() {
     setExportMode(false);
   }, [exportMode, trainingData]);
 
+  // @ts-expect-error: suppressing unused variable for now
   const handleReorder = useCallback(
     (newBlocks: TrainingBlock[], newLoops: Loop[]) => {
       setTrainingData((prev) => ({

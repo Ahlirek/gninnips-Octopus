@@ -1,8 +1,8 @@
 import modalStyles from './modalStyles.module.css';
 import styles from './TrainingBlockModal.module.css';
-import type { TrainingBlock } from '../types';
+import type { TrainingBlock, JumpsBlock, NormalBlock } from '../types';
 import { useModalKeyboardEvents } from '../hooks/useModalKeyboardEvents';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface TrainingBlockModalProps {
   isOpen: boolean;
@@ -56,7 +56,7 @@ function isDistanceValid(distanceStr: string): boolean {
   }
   return true;
 }
-//INFO: USE IT TO PREFILL DATA WHEN UPDATING VALUES
+
 function secondsToTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -78,20 +78,58 @@ export default function TrainingBlockModal({
   const isJump = [5, 7, 0].includes(blockType);
 
   const [position, setPosition] = useState<number>(initialPosition || 1);
-
   const [hr, setHr] = useState('');
   const [metric, setMetric] = useState<'distance' | 'time'>('time');
-
   const [rpm, setRpm] = useState('');
   const [timeDistValue, setTimeDistValue] = useState('');
-
   const [rpmUp, setRpmUp] = useState('');
   const [rpmDown, setRpmDown] = useState('');
   const [jumps, setJumps] = useState('');
   const [timeDistValueUp, setTimeDistValueUp] = useState('');
   const [timeDistValueDown, setTimeDistValueDown] = useState('');
-
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (mode === 'edit' && initialBlock) {
+      setHr(initialBlock.hr?.toString() || '');
+      setMetric(initialBlock.metric);
+      if (isJump) {
+        const jumpBlock = initialBlock as JumpsBlock;
+        setRpmUp(jumpBlock.rpmUp?.toString() || '');
+        setRpmDown(jumpBlock.rpmDown?.toString() || '');
+        setJumps(jumpBlock.jumps?.toString() || '');
+        if (jumpBlock.metric === 'distance') {
+          setTimeDistValueUp(jumpBlock.distanceUp?.toString() || '');
+          setTimeDistValueDown(jumpBlock.distanceDown?.toString() || '');
+        } else {
+          setTimeDistValueUp(
+            jumpBlock.timeUp ? secondsToTime(jumpBlock.timeUp) : '',
+          );
+          setTimeDistValueDown(
+            jumpBlock.timeDown ? secondsToTime(jumpBlock.timeDown) : '',
+          );
+        }
+      } else {
+        const normalBlock = initialBlock as NormalBlock;
+        setRpm(normalBlock.rpm?.toString() || '');
+        if (normalBlock.metric === 'distance') {
+          setTimeDistValue(normalBlock.distance?.toString() || '');
+        } else {
+          setTimeDistValue(
+            normalBlock.time ? secondsToTime(normalBlock.time) : '',
+          );
+        }
+      }
+    }
+  }, [mode, initialBlock, isJump]);
+
+  useEffect(() => {
+    if (initialPosition !== undefined) {
+      setPosition(initialPosition);
+    }
+  }, [initialPosition]);
+
+  const maxPos = mode === 'insert' ? totalBlocks + 1 : totalBlocks;
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -182,19 +220,24 @@ export default function TrainingBlockModal({
           }
         }
       }
+      if (position < 1 || position > maxPos) {
+        newErrors.position = `El # de bloque debe estar entre 1 y ${maxPos}`;
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInsert = () => {
+  const handleSave = () => {
     if (!validate()) {
       return;
     }
+    const blockId =
+      mode === 'edit' && initialBlock ? initialBlock.id : Date.now().toString();
+
     let block: TrainingBlock;
     if (isJump) {
-      block = {
-        id: Date.now().toString(),
+      const base: Omit<JumpsBlock, 'id'> = {
         kind: 'jump',
         type: blockType,
         hr: parseInt(hr),
@@ -204,15 +247,15 @@ export default function TrainingBlockModal({
         jumps: parseInt(jumps),
       };
       if (metric === 'distance') {
-        block.distanceUp = parseFloat(timeDistValueUp);
-        block.distanceDown = parseFloat(timeDistValueDown);
+        base.distanceUp = parseFloat(timeDistValueUp);
+        base.distanceDown = parseFloat(timeDistValueDown);
       } else {
-        block.timeUp = timeToSeconds(timeDistValueUp);
-        block.timeDown = timeToSeconds(timeDistValueDown);
+        base.timeUp = timeToSeconds(timeDistValueUp);
+        base.timeDown = timeToSeconds(timeDistValueDown);
       }
+      block = { ...base, id: blockId };
     } else {
-      block = {
-        id: Date.now().toString(),
+      const base: Omit<NormalBlock, 'id'> = {
         kind: 'normal',
         type: blockType,
         hr: parseInt(hr),
@@ -220,20 +263,21 @@ export default function TrainingBlockModal({
         rpm: parseInt(rpm),
       };
       if (metric === 'distance') {
-        block.distance = parseFloat(timeDistValue);
+        base.distance = parseFloat(timeDistValue);
       } else {
-        block.time = timeToSeconds(timeDistValue);
+        base.time = timeToSeconds(timeDistValue);
       }
+      block = { ...base, id: blockId };
     }
 
-    onInsert(block);
+    onSave(block, position);
     onClose();
   };
 
   useModalKeyboardEvents({
     isOpen,
     onClose,
-    onConfirm: handleInsert,
+    onConfirm: handleSave,
   });
 
   if (!isOpen) {
@@ -245,9 +289,7 @@ export default function TrainingBlockModal({
       onClose();
     }
   };
-  const position = 10;
-  const maxPos = 8;
-  const setPosition = (e) => {};
+
   return (
     <div className={modalStyles.overlay} onClick={handleOverlayClick}>
       <div className={`${modalStyles.modalContainer} ${styles.modalContainer}`}>
@@ -444,7 +486,7 @@ export default function TrainingBlockModal({
           <button onClick={onClose} className={styles.cancel}>
             Cancelar
           </button>
-          <button onClick={handleInsert} className={styles.insert}>
+          <button onClick={handleSave} className={styles.insert}>
             Insertar
           </button>
         </div>
