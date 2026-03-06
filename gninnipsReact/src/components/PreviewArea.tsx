@@ -13,7 +13,7 @@ interface PreviewAreaProps {
   onDataChange: (data: TrainingData) => void;
   buttonImages: HTMLImageElement[];
   imageRef: React.Ref<Konva.Group>;
-  isSumTimeVisible: boolean;
+  isCumTimeDistVisible: boolean;
   exportMode: boolean;
   onEditBlock?: (index: number, block: TrainingBlock) => void;
 }
@@ -130,7 +130,7 @@ export default function PreviewArea({
   onDataChange,
   buttonImages,
   imageRef,
-  isSumTimeVisible,
+  isCumTimeDistVisible,
   exportMode,
   onEditBlock,
 }: PreviewAreaProps) {
@@ -337,7 +337,7 @@ export default function PreviewArea({
         <BlockText text={rpmText} x={rpmX} y={rpmY} />
         <BlockText text={numJumpsText} x={numJumpsX} y={numJumpsY} />
         <BlockText text={timeDistText} x={timeDistX} y={timeDistY} />
-        {isSumTimeVisible && (
+        {isCumTimeDistVisible && (
           <BlockText
             text={cumulativeText}
             x={xNext + 7}

@@ -20,7 +20,7 @@ import Konva from 'konva';
 function App() {
   const imageRef = useRef<Konva.Stage>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isSumTimeVisible, setIsSumTimeVisible] = useState(true);
+  const [isCumTimeDistVisible, setIsCumTimeDistVisible] = useState(true);
   const [exportMode, setExportMode] = useState(false);
 
   // @ts-expect-error: suppressing unused variable for now
@@ -307,8 +307,8 @@ function App() {
     console.log(`Number input: ${value}`);
   }, []);
 
-  const handleSumTime = useCallback(() => {
-    setIsSumTimeVisible((prev) => !prev);
+  const handleCumTimeDist = useCallback(() => {
+    setIsCumTimeDistVisible((prev) => !prev);
   }, []);
 
   const handleLeft = useCallback(() => {
@@ -444,7 +444,7 @@ function App() {
             onDataChange={setTrainingData}
             buttonImages={buttonImages}
             imageRef={imageRef}
-            isSumTimeVisible={isSumTimeVisible}
+            isCumTimeDistVisible={isCumTimeDistVisible}
             exportMode={exportMode}
             onEditBlock={handleEditBlock}
           />
@@ -459,7 +459,7 @@ function App() {
             onDelete={handleDelete}
             onRep={handleNumberInputValue}
             onLoop={handleLoop}
-            onSumTime={handleSumTime}
+            onCumTimeDist={handleCumTimeDist}
             onLeft={handleLeft}
             onRight={handleRight}
             onLoadTraining={handleLoadTraining}

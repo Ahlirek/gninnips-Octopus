@@ -12,7 +12,7 @@ interface ControlsBarProps {
   onDelete: () => void;
   onLoop: () => void;
   onRep: (value: number) => void;
-  onSumTime: () => void;
+  onCumTimeDist: () => void;
   onLeft: () => void;
   onRight: () => void;
   onLoadTraining: () => void;
@@ -32,7 +32,7 @@ const CLEAR_BUTTON_TEXT = '[L]impiar';
 const DELETE_BUTTON_TEXT = 'Borrar';
 const LOOP_BUTTON_TEXT = '[C]iclo';
 const REPETITIONS_BUTTON_TEXT = '[R]epeticiones';
-const SUM_TIME_BUTON_TEXT = '[S]umatoria Tiempo';
+const CUM_TIME_DIST_BUTTON_TEXT = '[A]ccumulado';
 const EDIT_BUTTON_TEXT = '[E]dit';
 const LEFT_BUTTON_TEXT = 'Izquierda';
 const RIGHT_BUTTON_TEXT = 'Derecha';
@@ -46,7 +46,7 @@ const emojisData = [
   ['🗓️', DATE_BUTTON_TEXT, 'F'],
   ['［ ］', LOOP_BUTTON_TEXT, 'C'],
   ['X ❓', REPETITIONS_BUTTON_TEXT, 'R'],
-  ['⏱️➕', SUM_TIME_BUTON_TEXT, 'S'],
+  ['⏱️➕', CUM_TIME_DIST_BUTTON_TEXT, 'A'],
   ['✏️', EDIT_BUTTON_TEXT, 'E'],
   ['⬅️', LEFT_BUTTON_TEXT, 'Flecha Izquierda'],
   ['➡️', RIGHT_BUTTON_TEXT, 'Flecha Derecha'],
@@ -62,7 +62,7 @@ export default function ControlsBar({
   onDelete,
   onLoop,
   onRep,
-  onSumTime,
+  onCumTimeDist,
   onLeft,
   onRight,
   onLoadTraining,
@@ -104,10 +104,10 @@ export default function ControlsBar({
       r: { handler: () => setIsNumberInputVisible(true) },
       backspace: { handler: onDelete, options: { preventDefault: true } },
       c: { handler: onLoop },
-      s: { handler: onSumTime },
+      a: { handler: onCumTimeDist },
+      e: { handler: onEditCurrent },
       arrowleft: { handler: onLeft, options: { preventDefault: true } },
       arrowright: { handler: onRight, options: { preventDefault: true } },
-      e: { handler: onEditCurrent },
       u: { handler: onLoadTraining },
       d: { handler: onDownloadTraining },
     },
@@ -143,17 +143,17 @@ export default function ControlsBar({
         case LOOP_BUTTON_TEXT:
           onLoop();
           break;
-        case SUM_TIME_BUTON_TEXT:
-          onSumTime();
+        case CUM_TIME_DIST_BUTTON_TEXT:
+          onCumTimeDist();
+          break;
+        case EDIT_BUTTON_TEXT:
+          onEditCurrent();
           break;
         case LEFT_BUTTON_TEXT:
           onLeft();
           break;
         case RIGHT_BUTTON_TEXT:
           onRight();
-          break;
-        case EDIT_BUTTON_TEXT:
-          onEditCurrent();
           break;
         case LOAD_TRAINING_BUTTON_TEXT:
           onLoadTraining();

@@ -512,7 +512,7 @@ export default function TrainingBlockModal({
         <div className={styles.blockOrderRow}>
           <div className={styles.fieldGroup}>
             <div className={styles.positionInline}>
-              <label># Bloque:</label>
+              <label>Ubicación:</label>
               <input
                 type="number"
                 value={newIndex + 1}
