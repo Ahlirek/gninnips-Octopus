@@ -2,7 +2,7 @@ import modalStyles from './modalStyles.module.css';
 import styles from './TrainingBlockModal.module.css';
 import type { TrainingBlock, JumpsBlock, NormalBlock } from '../types';
 import { useModalKeyboardEvents } from '../hooks/useModalKeyboardEvents';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface TrainingBlockModalProps {
   isOpen: boolean;
@@ -13,7 +13,7 @@ interface TrainingBlockModalProps {
   buttonImage?: HTMLImageElement | null;
   optional?: boolean;
   initialBlock?: TrainingBlock; // para que sirve?
-  initialPosition?: number; // para que sirve?
+  initialIndex?: number; // para que sirve?
   totalBlocks?: number;
 }
 
@@ -23,6 +23,7 @@ const RPM_LOWER_LIMIT = 60;
 const RPM_UPPER_LIMIT = 120;
 const DIST_LOWER_LIMIT = 0;
 const DIST_UPPER_LIMIT = 1000;
+const JUMP_BUTTONS = [5, 7, 0];
 
 const HR_LIMIT_ERROR_MESSAGE = `Ingrese un valor entre ${HR_LOWER_LIMIT}%-${HR_UPPER_LIMIT}%`;
 const RPM_LIMIT_ERROR_MESSAGE = `Ingrese un valor entre ${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT} RPM`;
@@ -57,7 +58,10 @@ function isDistanceValid(distanceStr: string): boolean {
   return true;
 }
 
-function secondsToTime(seconds: number): string {
+function secondsToTime(seconds: number | undefined): string {
+  if (!seconds) {
+    return '';
+  }
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -72,62 +76,99 @@ export default function TrainingBlockModal({
   buttonImage,
   optional = false,
   initialBlock,
-  initialPosition,
+  initialIndex,
   totalBlocks = 0,
 }: TrainingBlockModalProps) {
-  const isJump = [5, 7, 0].includes(blockType);
+  console.log(initialBlock);
+  const isJump =
+    mode === 'edit'
+      ? initialBlock?.kind === 'jump'
+      : JUMP_BUTTONS.includes(blockType);
 
-  const [position, setPosition] = useState<number>(initialPosition || 1);
-  const [hr, setHr] = useState('');
-  const [metric, setMetric] = useState<'distance' | 'time'>('time');
-  const [rpm, setRpm] = useState('');
-  const [timeDistValue, setTimeDistValue] = useState('');
-  const [rpmUp, setRpmUp] = useState('');
-  const [rpmDown, setRpmDown] = useState('');
-  const [jumps, setJumps] = useState('');
-  const [timeDistValueUp, setTimeDistValueUp] = useState('');
-  const [timeDistValueDown, setTimeDistValueDown] = useState('');
+  const [newIndex, setNewIndex] = useState<number>(initialIndex ?? 0);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    if (mode === 'edit' && initialBlock) {
-      setHr(initialBlock.hr?.toString() || '');
-      setMetric(initialBlock.metric);
-      if (isJump) {
-        const jumpBlock = initialBlock as JumpsBlock;
-        setRpmUp(jumpBlock.rpmUp?.toString() || '');
-        setRpmDown(jumpBlock.rpmDown?.toString() || '');
-        setJumps(jumpBlock.jumps?.toString() || '');
-        if (jumpBlock.metric === 'distance') {
-          setTimeDistValueUp(jumpBlock.distanceUp?.toString() || '');
-          setTimeDistValueDown(jumpBlock.distanceDown?.toString() || '');
-        } else {
-          setTimeDistValueUp(
-            jumpBlock.timeUp ? secondsToTime(jumpBlock.timeUp) : '',
-          );
-          setTimeDistValueDown(
-            jumpBlock.timeDown ? secondsToTime(jumpBlock.timeDown) : '',
-          );
-        }
+  const [metric, setMetric] = useState<'distance' | 'time'>(
+    initialBlock?.metric ?? 'time',
+  );
+  const [rpm, setRpm] = useState(() => {
+    if (mode === 'edit' && initialBlock?.kind === 'normal') {
+      return initialBlock.rpm.toString();
+    }
+    return '';
+  });
+  const [timeDistValue, setTimeDistValue] = useState(() => {
+    if (mode === 'edit' && initialBlock?.kind === 'normal') {
+      const block = initialBlock;
+      if (block.metric === 'distance') {
+        return block.distance?.toString() ?? '';
       } else {
-        const normalBlock = initialBlock as NormalBlock;
-        setRpm(normalBlock.rpm?.toString() || '');
-        if (normalBlock.metric === 'distance') {
-          setTimeDistValue(normalBlock.distance?.toString() || '');
-        } else {
-          setTimeDistValue(
-            normalBlock.time ? secondsToTime(normalBlock.time) : '',
-          );
-        }
+        return secondsToTime(block.time);
       }
     }
-  }, [mode, initialBlock, isJump]);
-
-  useEffect(() => {
-    if (initialPosition !== undefined) {
-      setPosition(initialPosition);
+    return '';
+  });
+  const [hr, setHr] = useState(() => {
+    if (mode === 'edit' && initialBlock && !Number.isNaN(initialBlock.hr)) {
+      return initialBlock.hr.toString();
     }
-  }, [initialPosition]);
+    return '';
+  });
+  const [rpmUp, setRpmUp] = useState(() => {
+    if (
+      mode === 'edit' &&
+      initialBlock?.kind === 'jump' &&
+      !Number.isNaN(initialBlock.rpmUp)
+    ) {
+      return initialBlock.rpmUp.toString();
+    }
+    return '';
+  });
+  const [rpmDown, setRpmDown] = useState(() => {
+    if (
+      mode === 'edit' &&
+      initialBlock?.kind === 'jump' &&
+      !Number.isNaN(initialBlock.rpmDown)
+    ) {
+      return initialBlock.rpmDown.toString();
+    }
+    return '';
+  });
+  const [jumps, setJumps] = useState(() => {
+    if (
+      mode === 'edit' &&
+      initialBlock?.kind === 'jump' &&
+      !Number.isNaN(initialBlock.jumps)
+    ) {
+      return initialBlock.jumps.toString();
+    }
+    return '';
+  });
+  const [timeDistValueUp, setTimeDistValueUp] = useState(() => {
+    if (mode === 'edit' && initialBlock?.kind === 'jump') {
+      if (
+        initialBlock.metric === 'distance' &&
+        !Number.isNaN(initialBlock.distanceUp)
+      ) {
+        return initialBlock.distanceUp?.toString() ?? '';
+      } else if (!Number.isNaN(initialBlock.timeUp)) {
+        return secondsToTime(initialBlock.timeUp);
+      }
+    }
+    return '';
+  });
+  const [timeDistValueDown, setTimeDistValueDown] = useState(() => {
+    if (mode === 'edit' && initialBlock?.kind === 'jump') {
+      if (
+        initialBlock.metric === 'distance' &&
+        !Number.isNaN(initialBlock.distanceDown)
+      ) {
+        return initialBlock.distanceDown?.toString() ?? '';
+      } else if (!Number.isNaN(initialBlock.timeDown)) {
+        return secondsToTime(initialBlock.timeDown);
+      }
+    }
+    return '';
+  });
 
   const maxPos = mode === 'insert' ? totalBlocks + 1 : totalBlocks;
 
@@ -220,9 +261,9 @@ export default function TrainingBlockModal({
           }
         }
       }
-      if (position < 1 || position > maxPos) {
-        newErrors.position = `El # de bloque debe estar entre 1 y ${maxPos}`;
-      }
+    }
+    if (newIndex < 0 || newIndex >= maxPos) {
+      newErrors.position = `La ubicación del bloque debe ser entre 1 y ${maxPos}`;
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -270,7 +311,7 @@ export default function TrainingBlockModal({
       block = { ...base, id: blockId };
     }
 
-    onSave(block, position);
+    onSave(block, newIndex);
     onClose();
   };
 
@@ -470,14 +511,16 @@ export default function TrainingBlockModal({
 
         <div className={styles.blockOrderRow}>
           <div className={styles.fieldGroup}>
-            <label># Bloque:</label>
-            <input
-              type="number"
-              value={position}
-              onChange={(e) => setPosition(parseInt(e.target.value) || 1)}
-              min={1}
-              max={maxPos}
-            />
+            <div className={styles.positionInline}>
+              <label># Bloque:</label>
+              <input
+                type="number"
+                value={newIndex + 1}
+                onChange={(e) => setNewIndex(parseInt(e.target.value) - 1 || 0)}
+                min={1}
+                max={maxPos}
+              />
+            </div>
             <span className={styles.error}>{errors.position || ''}</span>
           </div>
         </div>

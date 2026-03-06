@@ -199,17 +199,23 @@
 .blockOrderRow { 
     display: flex;
     justify-content: flex-end;
-    margin-bottom:1.5rem
-}
-
-.blockOrderRow .fieldGroup {
-    flex-direction: row;
-    gap: 0.5rem;
-    min-width: unset; /*revisar errores*/
 }
 
 .blockOrderRow input {
     width: 60px;              
-    padding: 0.4rem;
+}
+
+.positionInline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.blockOrderRow .fieldGroup {
+    align-items: flex-end; 
+}
+
+.blockOrderRow .error {
+    min-width: 267px;
 }
 

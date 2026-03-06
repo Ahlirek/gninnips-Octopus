@@ -59,7 +59,6 @@ function App() {
     blockType: number;
     block?: TrainingBlock;
     index?: number;
-    position?: number;
   } | null>(null);
 
   const [buttonImages, setButtonImages] = useState<HTMLImageElement[]>([]);
@@ -97,11 +96,10 @@ function App() {
     (blockType: number) => {
       console.log(`Selected image ${blockType + 1}`);
       setSelectedImageIndex(blockType);
-      // setTrainingModalState({ open: true, buttonIndex: index });
       setTrainingModalState({
         mode: 'insert',
         blockType,
-        position: trainingData.cursor + 1,
+        index: trainingData.cursor,
       });
     },
     [trainingData.cursor],
@@ -113,7 +111,6 @@ function App() {
       blockType: block.type,
       block,
       index,
-      position: index + 1,
     });
   }, []);
 
@@ -169,7 +166,6 @@ function App() {
           ...prev,
           blocks: newBlocks,
           loops: newLoops,
-          cursor: newIndex + 1,
         };
       });
     },
@@ -178,15 +174,14 @@ function App() {
 
   // why trainingModalState.index should not be undefined?
   const handleSaveBlock = useCallback(
-    (block: TrainingBlock, position: number) => {
-      const positionIndex = position - 1;
+    (block: TrainingBlock, blockIndex: number) => {
       if (
         trainingModalState?.mode === 'edit' &&
         trainingModalState.index !== undefined
       ) {
-        handleUpdateBlock(trainingModalState.index, block, positionIndex);
+        handleUpdateBlock(trainingModalState.index, block, blockIndex);
       } else if (trainingModalState?.mode === 'insert') {
-        handleInsertBlockAtPosition(block, positionIndex);
+        handleInsertBlockAtPosition(block, blockIndex);
       }
       setTrainingModalState(null);
     },
@@ -504,17 +499,21 @@ function App() {
 
         {trainingModalState && (
           <TrainingBlockModal
-            key={trainingModalState.blockType}
+            key={
+              trainingModalState.mode === 'edit'
+                ? trainingModalState.block!.id
+                : `insert-${trainingModalState.index}`
+            }
             isOpen={!!trainingModalState}
             onClose={() => setTrainingModalState(null)}
             onSave={handleSaveBlock}
             mode={trainingModalState.mode}
-            blockType={trainingModalState.blockType}
             buttonImage={buttonImages[trainingModalState.blockType]}
             optional={trainingModalState.blockType === 0}
-            initialBlock={trainingModalState.block}
-            initialPosition={trainingModalState.position}
+            blockType={trainingModalState.blockType}
             totalBlocks={trainingData.blocks.length}
+            initialBlock={trainingModalState.block}
+            initialIndex={trainingModalState.index}
           />
         )}
         <input
