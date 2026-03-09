@@ -12,16 +12,16 @@ export interface NormalBlock {
 export interface JumpsBlock {
   id: string;
   type: number;
-  hr: number;
-  rpmUp: number;
-  rpmDown: number;
+  hr?: number;
+  rpmUp?: number;
+  rpmDown?: number;
   metric: 'distance' | 'time';
   kind: 'jump';
   distanceUp?: number;
   distanceDown?: number;
   timeUp?: number;
   timeDown?: number;
-  jumps: number;
+  jumps?: number;
 }
 
 export type TrainingBlock = NormalBlock | JumpsBlock;

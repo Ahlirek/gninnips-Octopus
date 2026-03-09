@@ -108,7 +108,7 @@ export default function TrainingBlockModal({
     return '';
   });
   const [hr, setHr] = useState(() => {
-    if (mode === 'edit' && initialBlock && !Number.isNaN(initialBlock.hr)) {
+    if (mode === 'edit' && initialBlock && initialBlock.hr) {
       return initialBlock.hr.toString();
     }
     return '';
@@ -117,7 +117,7 @@ export default function TrainingBlockModal({
     if (
       mode === 'edit' &&
       initialBlock?.kind === 'jump' &&
-      !Number.isNaN(initialBlock.rpmUp)
+      initialBlock.rpmUp
     ) {
       return initialBlock.rpmUp.toString();
     }
@@ -127,7 +127,7 @@ export default function TrainingBlockModal({
     if (
       mode === 'edit' &&
       initialBlock?.kind === 'jump' &&
-      !Number.isNaN(initialBlock.rpmDown)
+      initialBlock.rpmDown
     ) {
       return initialBlock.rpmDown.toString();
     }
@@ -137,7 +137,7 @@ export default function TrainingBlockModal({
     if (
       mode === 'edit' &&
       initialBlock?.kind === 'jump' &&
-      !Number.isNaN(initialBlock.jumps)
+      initialBlock.jumps
     ) {
       return initialBlock.jumps.toString();
     }
@@ -145,12 +145,9 @@ export default function TrainingBlockModal({
   });
   const [timeDistValueUp, setTimeDistValueUp] = useState(() => {
     if (mode === 'edit' && initialBlock?.kind === 'jump') {
-      if (
-        initialBlock.metric === 'distance' &&
-        !Number.isNaN(initialBlock.distanceUp)
-      ) {
+      if (initialBlock.metric === 'distance' && initialBlock.distanceUp) {
         return initialBlock.distanceUp?.toString() ?? '';
-      } else if (!Number.isNaN(initialBlock.timeUp)) {
+      } else if (initialBlock.timeUp) {
         return secondsToTime(initialBlock.timeUp);
       }
     }
@@ -158,12 +155,9 @@ export default function TrainingBlockModal({
   });
   const [timeDistValueDown, setTimeDistValueDown] = useState(() => {
     if (mode === 'edit' && initialBlock?.kind === 'jump') {
-      if (
-        initialBlock.metric === 'distance' &&
-        !Number.isNaN(initialBlock.distanceDown)
-      ) {
+      if (initialBlock.metric === 'distance' && initialBlock.distanceDown) {
         return initialBlock.distanceDown?.toString() ?? '';
-      } else if (!Number.isNaN(initialBlock.timeDown)) {
+      } else if (initialBlock.timeDown) {
         return secondsToTime(initialBlock.timeDown);
       }
     }
@@ -281,18 +275,30 @@ export default function TrainingBlockModal({
       const base: Omit<JumpsBlock, 'id'> = {
         kind: 'jump',
         type: blockType,
-        hr: parseInt(hr),
+        hr: hr.trim() === '' ? undefined : parseInt(hr),
         metric,
-        rpmUp: parseInt(rpmUp),
-        rpmDown: parseInt(rpmDown),
-        jumps: parseInt(jumps),
+        rpmUp: rpmUp.trim() === '' ? undefined : parseInt(rpmUp),
+        rpmDown: rpmDown.trim() === '' ? undefined : parseInt(rpmDown),
+        jumps: jumps.trim() === '' ? undefined : parseInt(jumps),
       };
       if (metric === 'distance') {
-        base.distanceUp = parseFloat(timeDistValueUp);
-        base.distanceDown = parseFloat(timeDistValueDown);
+        base.distanceUp =
+          timeDistValueUp.trim() === ''
+            ? undefined
+            : parseFloat(timeDistValueUp);
+        base.distanceDown =
+          timeDistValueDown.trim() === ''
+            ? undefined
+            : parseFloat(timeDistValueDown);
       } else {
-        base.timeUp = timeToSeconds(timeDistValueUp);
-        base.timeDown = timeToSeconds(timeDistValueDown);
+        base.timeUp =
+          timeDistValueUp.trim() === ''
+            ? undefined
+            : timeToSeconds(timeDistValueUp);
+        base.timeDown =
+          timeDistValueDown.trim() === ''
+            ? undefined
+            : timeToSeconds(timeDistValueDown);
       }
       block = { ...base, id: blockId };
     } else {
