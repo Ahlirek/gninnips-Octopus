@@ -192,6 +192,22 @@ export default function PreviewArea({
     };
   };
 
+  const getCellPositionForBlock = (blockIndex: number) => {
+    const numLoopEndsBeforeIndex = data.loops.filter(
+      (loop) => loop.end < blockIndex,
+    ).length;
+    return getCellPosition(blockIndex + numLoopEndsBeforeIndex);
+  };
+
+  const cellToBlock = useMemo(() => {
+    const map: (number | undefined)[] = new Array(COLS * ROWS).fill(undefined);
+    data.blocks.forEach((_, idx) => {
+      const cellIdx = idx + data.loops.filter((loop) => loop.end < idx).length;
+      map[cellIdx] = idx;
+    });
+    return map;
+  }, [data.blocks, data.loops]);
+
   const handleDragEnd = (
     e: Konva.KonvaEventObject<DragEvent>,
     draggedIndex: number,
@@ -199,35 +215,35 @@ export default function PreviewArea({
     const pos = e.target.position();
     const col = Math.round((pos.x - IMAGE_MARGIN) / CELL_WIDTH);
     const row = Math.round((pos.y - IMAGE_BLOCKS_START_Y) / CELL_HEIGHT);
-    const targetIndex = row * COLS + col;
+    const targetBlockIndex = row * COLS + col;
+
+    const targetBlockIndexWithLoops = cellToBlock[targetBlockIndex];
 
     if (
-      targetIndex < 0 ||
-      targetIndex >= data.blocks.length ||
-      targetIndex === draggedIndex
+      targetBlockIndexWithLoops === undefined ||
+      targetBlockIndexWithLoops < 0 ||
+      targetBlockIndexWithLoops >= data.blocks.length ||
+      targetBlockIndexWithLoops === draggedIndex
     ) {
-      const { x, y } = getCellPosition(draggedIndex);
+      const { x, y } = getCellPositionForBlock(draggedIndex);
       e.target.position({ x, y });
       return;
     }
 
     const newBlocks = [...data.blocks];
-    [newBlocks[draggedIndex], newBlocks[targetIndex]] = [
-      newBlocks[targetIndex],
+    [newBlocks[draggedIndex], newBlocks[targetBlockIndexWithLoops]] = [
+      newBlocks[targetBlockIndexWithLoops],
       newBlocks[draggedIndex],
     ];
 
     onDataChange({ ...data, blocks: newBlocks });
 
-    const newPos = getCellPosition(targetIndex);
+    const newPos = getCellPositionForBlock(targetBlockIndexWithLoops);
     e.target.position(newPos);
   };
 
   const renderBlock = (block: TrainingBlock, index: number) => {
-    const numLoopEndsBeforeBlock = data.loops.filter(
-      (loop) => loop.end < index,
-    ).length;
-    const { x, y } = getCellPosition(index + numLoopEndsBeforeBlock);
+    const { x, y } = getCellPositionForBlock(index);
     const isJump = block.kind === 'jump';
     const img = buttonImages[block.type];
 
