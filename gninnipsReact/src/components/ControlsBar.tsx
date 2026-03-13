@@ -1,6 +1,5 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef } from 'react';
 import Button from './Button.tsx';
-import NumberInputButton from './NumberInputButton.tsx';
 import styles from './ControlsBar.module.css';
 import { useKeyboardShorcuts } from '../hooks/useKeyboardShorcuts.ts';
 
@@ -9,9 +8,9 @@ interface ControlsBarProps {
   onOpenTitleModal: () => void;
   onOpenDatePicker: (buttonReact: DOMRect) => void;
   onOpenConfirmationModal: () => void;
-  onDelete: () => void;
-  onLoop: () => void;
-  onRep: (value: number) => void;
+  onDelete: (index?: number) => void;
+  onCreateLoop: () => void;
+  onEditLoop: () => void;
   onCumTimeDist: () => void;
   onLeft: () => void;
   onRight: () => void;
@@ -19,33 +18,33 @@ interface ControlsBarProps {
   onDownloadTraining: () => void;
   shorcutsDisabled: boolean;
   onEditCurrent: () => void;
-  canEdit: boolean;
+  cannotEditBlockAndCreateLoop: boolean;
 }
 
 const IMAGES_LENGTH = 10;
 const TOTAL_BUTTONS = 22;
-const NUMBER_INPUT_INDEX = 15;
 
 const TITLE_BUTTON_TEXT = '[T]itulo';
 const DATE_BUTTON_TEXT = '[F]echa';
 const CLEAR_BUTTON_TEXT = '[L]impiar';
 const DELETE_BUTTON_TEXT = 'Borrar';
-const LOOP_BUTTON_TEXT = '[C]iclo';
-const REPETITIONS_BUTTON_TEXT = '[R]epeticiones';
+const CREATE_LOOP_BUTTON_TEXT = '[C]iclo';
+const EDIT_LOOP_BUTTON_TEXT = 'Edita[R] Ciclo';
 const CUM_TIME_DIST_BUTTON_TEXT = '[A]ccumulado';
 const EDIT_BUTTON_TEXT = '[E]dit';
 const LEFT_BUTTON_TEXT = 'Izquierda';
 const RIGHT_BUTTON_TEXT = 'Derecha';
 const LOAD_TRAINING_BUTTON_TEXT = 'Cargar Entrenamiento';
 const DOWNLOAD_TRAINING_BUTTON_TEXT = '[D]escargar Entrenamiento';
+const BUTTONS_CAN_BE_DISABLED = [EDIT_BUTTON_TEXT, CREATE_LOOP_BUTTON_TEXT];
 
 const emojisData = [
   ['␡', DELETE_BUTTON_TEXT, 'Retroceso'],
   ['🗑️', CLEAR_BUTTON_TEXT, 'L'],
   ['𝐓', TITLE_BUTTON_TEXT, 'T'],
   ['🗓️', DATE_BUTTON_TEXT, 'F'],
-  ['［ ］', LOOP_BUTTON_TEXT, 'C'],
-  ['X ❓', REPETITIONS_BUTTON_TEXT, 'R'],
+  ['［ ］', CREATE_LOOP_BUTTON_TEXT, 'C'],
+  ['［🔄］', EDIT_LOOP_BUTTON_TEXT, 'R'],
   ['⏱️➕', CUM_TIME_DIST_BUTTON_TEXT, 'A'],
   ['✏️', EDIT_BUTTON_TEXT, 'E'],
   ['⬅️', LEFT_BUTTON_TEXT, 'Flecha Izquierda'],
@@ -60,8 +59,8 @@ export default function ControlsBar({
   onOpenDatePicker,
   onOpenConfirmationModal,
   onDelete,
-  onLoop,
-  onRep,
+  onCreateLoop,
+  onEditLoop,
   onCumTimeDist,
   onLeft,
   onRight,
@@ -69,14 +68,9 @@ export default function ControlsBar({
   onDownloadTraining,
   shorcutsDisabled = false,
   onEditCurrent,
-  canEdit,
+  cannotEditBlockAndCreateLoop,
 }: ControlsBarProps) {
   const fechaButtonRef = useRef<HTMLButtonElement>(null);
-  const [isNumberInputVisible, setIsNumberInputVisible] = useState(false);
-
-  const handleNumberInputClose = useCallback(() => {
-    setIsNumberInputVisible(false);
-  }, []);
 
   useKeyboardShorcuts(
     {
@@ -101,11 +95,11 @@ export default function ControlsBar({
         },
       },
       l: { handler: onOpenConfirmationModal },
-      r: { handler: () => setIsNumberInputVisible(true) },
+      r: { handler: onEditLoop, disabled: false },
       backspace: { handler: onDelete, options: { preventDefault: true } },
-      c: { handler: onLoop },
+      c: { handler: onCreateLoop, disabled: cannotEditBlockAndCreateLoop },
       a: { handler: onCumTimeDist },
-      e: { handler: onEditCurrent },
+      e: { handler: onEditCurrent, disabled: cannotEditBlockAndCreateLoop },
       arrowleft: { handler: onLeft, options: { preventDefault: true } },
       arrowright: { handler: onRight, options: { preventDefault: true } },
       u: { handler: onLoadTraining },
@@ -140,8 +134,11 @@ export default function ControlsBar({
         case DELETE_BUTTON_TEXT:
           onDelete();
           break;
-        case LOOP_BUTTON_TEXT:
-          onLoop();
+        case CREATE_LOOP_BUTTON_TEXT:
+          onCreateLoop();
+          break;
+        case EDIT_LOOP_BUTTON_TEXT:
+          onEditLoop();
           break;
         case CUM_TIME_DIST_BUTTON_TEXT:
           onCumTimeDist();
@@ -181,15 +178,14 @@ export default function ControlsBar({
       };
     }
 
-    const isNumberInput = index === NUMBER_INPUT_INDEX;
     const emojiIndex = Math.max(0, index - IMAGES_LENGTH);
     const currentEmoji = emojisData[emojiIndex];
 
     return {
-      type: isNumberInput ? 'numberInput' : 'emoji',
+      type: 'emoji',
       emoji: currentEmoji[0],
       text: currentEmoji[1],
-      key: isNumberInput ? 'numberInput' : `emoji-${index}`,
+      key: `emoji-${index}`,
       title: `Shorcut: ${currentEmoji[2]}`,
     };
   });
@@ -197,24 +193,6 @@ export default function ControlsBar({
   return (
     <div className={styles.buttonGrid}>
       {buttonConfigs.map((el, index) => {
-        if (el.type === 'numberInput') {
-          return (
-            <NumberInputButton
-              key={el.key}
-              emoji={el.emoji}
-              altText={el.text}
-              buttonText={el.text}
-              data-index={index.toString()}
-              data-button-text={el.text}
-              title={el.title}
-              placeholder="Enter number"
-              onSubmit={onRep}
-              isOpen={isNumberInputVisible}
-              onOpen={() => setIsNumberInputVisible(true)}
-              onClose={handleNumberInputClose}
-            />
-          );
-        }
         return (
           <Button
             key={el.key}
@@ -226,7 +204,10 @@ export default function ControlsBar({
             data-button-text={el.text}
             onClick={() => handleButtonClick(index, el.type, el.text)}
             title={el.title}
-            disabled={el.text === EDIT_BUTTON_TEXT && !canEdit}
+            disabled={
+              BUTTONS_CAN_BE_DISABLED.includes(el.text) &&
+              cannotEditBlockAndCreateLoop
+            }
             {...(el.text === DATE_BUTTON_TEXT ? { ref: fechaButtonRef } : {})}
           />
         );

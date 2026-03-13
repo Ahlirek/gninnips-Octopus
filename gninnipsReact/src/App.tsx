@@ -8,6 +8,7 @@ import {
   useLayoutEffect,
 } from 'react';
 import styles from './App.module.css';
+import LoopModal from './components/LoopModal.tsx';
 import TrainingBlockModal from './components/TrainingBlockModal.tsx';
 import type { TrainingData, TrainingBlock, Loop } from './types.ts';
 import PreviewArea from './components/PreviewArea.tsx';
@@ -47,18 +48,15 @@ function App() {
     title: '',
   });
 
-  // const [trainingModalState, setTrainingModalState] = useState<{
-  //   open: boolean;
-  //   buttonIndex: number;
-  // }>({
-  //   open: false,
-  //   buttonIndex: -1,
-  // });
   const [trainingModalState, setTrainingModalState] = useState<{
     mode: 'insert' | 'edit';
     blockType: number;
     block?: TrainingBlock;
     index?: number;
+  } | null>(null);
+  const [loopModalState, setLoopModalState] = useState<{
+    mode: 'create' | 'edit';
+    loop?: Loop;
   } | null>(null);
 
   const [buttonImages, setButtonImages] = useState<HTMLImageElement[]>([]);
@@ -105,7 +103,12 @@ function App() {
     [trainingData.cursor],
   );
 
-  const canEdit = trainingData.cursor < trainingData.blocks.length;
+  const cannotEditBlockAndCreateLoop =
+    trainingData.cursor >= trainingData.blocks.length;
+  // const canEditLoop = findLoopUnderCursor(
+  //   trainingData.cursor,
+  //   trainingData.loops,
+  // ); //TODO:
   const handleEditCurrent = useCallback(() => {
     const block = trainingData.blocks[trainingData.cursor];
     if (!block) {
@@ -119,15 +122,49 @@ function App() {
     });
   }, [trainingData.blocks, trainingData.cursor]);
 
-  const handleEditBlock = useCallback((index: number, block: TrainingBlock) => {
-    setTrainingModalState({
-      mode: 'edit',
-      blockType: block.type,
-      block,
-      index,
+  const handleEditBlock = useCallback(
+    (index: number, block: TrainingBlock) => {
+      setTrainingModalState({
+        mode: 'edit',
+        blockType: block.type,
+        block,
+        index,
+      });
+      setTrainingData({
+        ...trainingData,
+        cursor: index,
+      });
+    },
+    [trainingData],
+  );
+
+  const recomputeLoopParents = useCallback((loops: Loop[]): Loop[] => {
+    const sorted = [...loops].sort((a, b) => {
+      const rangeA = a.end - a.start;
+      const rangeB = b.end - b.start;
+      if (rangeA !== rangeB) {
+        return rangeA - rangeB;
+      }
+      if (a.start !== b.start) {
+        return a.start - b.start;
+      }
+      return Number(a.id) - Number(b.id);
+    });
+
+    return sorted.map((loop) => {
+      const parent = sorted.find((parentLoop) => {
+        if (parentLoop.start === loop.start && parentLoop.end === loop.end) {
+          return parentLoop.id > loop.id;
+        }
+        return (
+          parentLoop.id !== loop.id &&
+          parentLoop.start <= loop.start &&
+          parentLoop.end >= loop.end
+        );
+      });
+      return { ...loop, parentId: parent?.id || null };
     });
   }, []);
-
   const handleInsertBlockAtPosition = useCallback(
     (block: TrainingBlock, insertIndex: number) => {
       setTrainingData((prev) => {
@@ -137,56 +174,40 @@ function App() {
         const newBlocks = [...prev.blocks];
         newBlocks.splice(insertIndex, 0, block);
         const newLoops = prev.loops.map((loop) => ({
+          ...loop,
           start: loop.start >= insertIndex ? loop.start + 1 : loop.start,
           end: loop.end >= insertIndex ? loop.end + 1 : loop.end,
           repetitions: loop.repetitions,
         }));
+        const loopsWithParents = recomputeLoopParents(newLoops);
+
         return {
           ...prev,
           blocks: newBlocks,
-          loops: newLoops,
+          loops: loopsWithParents,
           cursor: insertIndex + 1,
         };
       });
     },
-    [],
+    [recomputeLoopParents],
   );
 
   const handleUpdateBlock = useCallback(
     (oldIndex: number, newBlock: TrainingBlock, newIndex: number) => {
       setTrainingData((prev) => {
-        // Remove old block
         const blocksAfterRemove = prev.blocks.filter((_, i) => i !== oldIndex);
-        const loopsAfterRemove = prev.loops
-          .map((loop) => ({
-            start: loop.start > oldIndex ? loop.start - 1 : loop.start,
-            end: loop.end > oldIndex ? loop.end - 1 : loop.end,
-            repetitions: loop.repetitions,
-          }))
-          .filter((loop) => loop.start < loop.end); // WARN: REVISAR ESTE FILTER
-
-        const insertIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
-
         const newBlocks = [...blocksAfterRemove];
-        newBlocks.splice(insertIndex, 0, newBlock);
-
-        const newLoops = loopsAfterRemove.map((loop) => ({
-          start: loop.start >= insertIndex ? loop.start + 1 : loop.start,
-          end: loop.end >= insertIndex ? loop.end + 1 : loop.end,
-          repetitions: loop.repetitions,
-        }));
+        newBlocks.splice(newIndex, 0, newBlock);
 
         return {
           ...prev,
           blocks: newBlocks,
-          loops: newLoops,
         };
       });
     },
     [],
   );
 
-  // why trainingModalState.index should not be undefined?
   const handleSaveBlock = useCallback(
     (block: TrainingBlock, blockIndex: number) => {
       if (
@@ -208,11 +229,9 @@ function App() {
   const handleTitleSave = useCallback((title: string) => {
     setTrainingData((prev) => ({ ...prev, title }));
     setIsTitleModalOpen(false);
-    console.log('Image title saved:', title);
   }, []);
   const handleTitleModalClose = useCallback(() => {
     setIsTitleModalOpen(false);
-    console.log('Title input cancelled');
   }, []);
 
   const handleConfirmClear = useCallback(() => {
@@ -242,77 +261,50 @@ function App() {
   const handleDateChange = useCallback((date: Date | null) => {
     setTrainingData((prev) => ({ ...prev, date }));
     setIsDatePickerOpen(false);
-    console.log('Selected date:', date);
   }, []);
   const handleClickOutsideDatePicker = useCallback(() => {
     setIsDatePickerOpen(false);
   }, []);
 
-  const handleDelete = useCallback(() => {
-    setTrainingData((prev) => {
-      if (prev.blocks.length === 0) {
-        return prev;
-      }
-      const newBlocks = prev.blocks.filter((_, i) => i !== prev.cursor);
-      // Adjust loops and cursor
-      const newLoops = prev.loops
-        .map((loop) => ({
-          start: loop.start > prev.cursor ? loop.start - 1 : loop.start,
-          end: loop.end > prev.cursor ? loop.end - 1 : loop.end,
-          repetitions: loop.repetitions,
-        }))
-        .filter((loop) => loop.start < loop.end); // INFO: < vs <=
-      const newCursor = Math.min(prev.cursor, newBlocks.length);
-      return { ...prev, blocks: newBlocks, loops: newLoops, cursor: newCursor };
-    });
-    console.log('Delete Clicked');
-  }, []);
-
-  const handleLoop = useCallback(() => {
-    // In a real app you'd let the user select a range; this is a placeholder.
-    console.log('Loop Clicked');
-    setTrainingData((prev) => {
-      const newLoop: Loop = {
-        start: prev.cursor,
-        end: prev.cursor,
-        repetitions: 1, //TODO: ESTE DEBERÍA ESTAR LIGADO CON NUMBER INPUT VALUE
-        // DEBO REDUCIR ESOS DOS BOTONES A 1 Y PROBABLEMENTE UN MODAL PARA SELECCIONAR
-        // DE DONDE A DONDE HACER EL LOOP
-        // Se puede usar un botón para MODIFICACIONES de ciclos actual
-        // y otro para borrar ciclo actual
-      };
-      return { ...prev, loops: [...prev.loops, newLoop] };
-    });
-  }, []);
-
-  // WARN: This is wrong should update the more inner loop where the coursor is
-  // probably this is substitution/repetition of handleNumberInputValue
-  // @ts-expect-error: suppressing unused variable for now
-  const handleRep = useCallback((reps: number) => {
-    setTrainingData((prev) => {
-      if (prev.loops.length === 0) {
-        return prev;
-      }
-      const newLoops = [...prev.loops];
-      newLoops[newLoops.length - 1] = {
-        ...newLoops[newLoops.length - 1],
-        repetitions: reps,
-      };
-      return { ...prev, loops: newLoops };
-    });
-  }, []);
-
-  const handleNumberInputValue = useCallback((value: number) => {
-    setNumberInputValue(value);
-    console.log(`Number input: ${value}`);
-  }, []);
+  const handleDeleteBlock = useCallback(
+    (index?: number) => {
+      setTrainingData((prev) => {
+        if (prev.blocks.length === 0) {
+          return prev;
+        }
+        const cursorOrLastElement =
+          prev.cursor === prev.blocks.length ? prev.cursor - 1 : prev.cursor;
+        const blockIndexToDelete = index ?? cursorOrLastElement;
+        const newBlocks = prev.blocks.filter(
+          (_, i) => i !== blockIndexToDelete,
+        );
+        const newLoops = prev.loops
+          .map((loop) => ({
+            ...loop,
+            start:
+              loop.start > blockIndexToDelete ? loop.start - 1 : loop.start,
+            end: loop.end > blockIndexToDelete ? loop.end - 1 : loop.end,
+            repetitions: loop.repetitions,
+          }))
+          .filter((loop) => loop.start <= loop.end);
+        const loopsWithParents = recomputeLoopParents(newLoops);
+        const newCursor = Math.min(prev.cursor, newBlocks.length);
+        return {
+          ...prev,
+          blocks: newBlocks,
+          loops: loopsWithParents,
+          cursor: newCursor,
+        };
+      });
+    },
+    [recomputeLoopParents],
+  );
 
   const handleCumTimeDist = useCallback(() => {
     setIsCumTimeDistVisible((prev) => !prev);
   }, []);
 
   const handleLeft = useCallback(() => {
-    console.log('Left Clicked');
     setTrainingData((prev) => ({
       ...prev,
       cursor: Math.max(0, prev.cursor - 1),
@@ -320,7 +312,6 @@ function App() {
   }, []);
 
   const handleRight = useCallback(() => {
-    console.log('Right Clicked');
     setTrainingData((prev) => ({
       ...prev,
       cursor: Math.min(prev.blocks.length, prev.cursor + 1),
@@ -348,7 +339,6 @@ function App() {
         }
 
         setTrainingData(loadedData);
-        console.log('Training loaded successfully');
       } catch (error) {
         console.error('Failed to load training file:', error);
         alert('Invalid training file');
@@ -417,23 +407,89 @@ function App() {
     setExportMode(false);
   }, [exportMode, trainingData]);
 
-  // @ts-expect-error: suppressing unused variable for now
-  const handleReorder = useCallback(
-    (newBlocks: TrainingBlock[], newLoops: Loop[]) => {
-      setTrainingData((prev) => ({
-        ...prev,
-        blocks: newBlocks,
-        loops: newLoops,
-      }));
+  const findLoopUnderCursor = useCallback(
+    (cursor: number, loops: Loop[]): Loop | undefined => {
+      const containing = loops.filter(
+        (l) => l.start <= cursor && l.end >= cursor,
+      );
+      if (containing.length === 0) {
+        return undefined;
+      }
+      containing.sort((a, b) => {
+        const rangeA = a.end - a.start;
+        const rangeB = b.end - b.start;
+        if (rangeA !== rangeB) {
+          return rangeA - rangeB;
+        }
+        return b.start - a.start;
+      });
+      return containing[0];
     },
     [],
   );
+
+  const handleEditLoopModal = useCallback(() => {
+    const loopUnderCursor = findLoopUnderCursor(
+      trainingData.cursor,
+      trainingData.loops,
+    );
+    if (loopUnderCursor) {
+      setLoopModalState({ mode: 'edit', loop: loopUnderCursor });
+    }
+  }, [trainingData.cursor, trainingData.loops, findLoopUnderCursor]);
+
+  const handleCreateLoopModal = useCallback(() => {
+    setLoopModalState({ mode: 'create' });
+  }, []);
+
+  const handleSaveLoop = useCallback(
+    (loopData: Omit<Loop, 'id'> & { id?: string }) => {
+      setTrainingData((prev) => {
+        let newLoops: Loop[];
+        if (loopData.id) {
+          newLoops = prev.loops.map((l) =>
+            l.id === loopData.id ? ({ ...loopData } as Loop) : l,
+          );
+        } else {
+          const newLoop: Loop = {
+            ...loopData,
+            id: Date.now().toString(),
+          };
+          newLoops = [...prev.loops, newLoop];
+        }
+        const loopsWithParents = recomputeLoopParents(newLoops);
+        console.log(loopsWithParents);
+        return { ...prev, loops: loopsWithParents };
+      });
+    },
+    [recomputeLoopParents],
+  );
+
+  const handleDeleteLoop = useCallback((id: string) => {
+    setTrainingData((prev) => {
+      const loopToDelete = prev.loops.find((l) => l.id === id);
+      if (!loopToDelete) {
+        return prev;
+      }
+      const newLoops = prev.loops
+        .filter((l) => l.id !== id)
+        .map((l) => {
+          if (l.parentId === id) {
+            return { ...l, parentId: loopToDelete.parentId };
+          }
+          return l;
+        });
+
+      return { ...prev, loops: newLoops };
+    });
+  }, []);
 
   const isAnyModalOpen =
     isTitleModalOpen ||
     isConfirmationModalOpen ||
     isDatePickerOpen ||
-    !!trainingModalState;
+    !!trainingModalState ||
+    !!loopModalState;
 
   return (
     <>
@@ -456,9 +512,9 @@ function App() {
             onOpenTitleModal={handleOpenTitleModal}
             onOpenDatePicker={handleOpenDatePicker}
             onOpenConfirmationModal={() => setIsConfirmationModalOpen(true)}
-            onDelete={handleDelete}
-            onRep={handleNumberInputValue}
-            onLoop={handleLoop}
+            onDelete={handleDeleteBlock}
+            onEditLoop={handleEditLoopModal}
+            onCreateLoop={handleCreateLoopModal}
             onCumTimeDist={handleCumTimeDist}
             onLeft={handleLeft}
             onRight={handleRight}
@@ -466,7 +522,7 @@ function App() {
             onDownloadTraining={handleDownloadTraining}
             shorcutsDisabled={isAnyModalOpen}
             onEditCurrent={handleEditCurrent}
-            canEdit={canEdit}
+            cannotEditBlockAndCreateLoop={cannotEditBlockAndCreateLoop}
           />
         </div>
 
@@ -513,16 +569,16 @@ function App() {
           </div>
         )}
 
-        {trainingModalState && (
+        {!!trainingModalState && (
           <TrainingBlockModal
             key={
               trainingModalState.mode === 'edit'
                 ? trainingModalState.block!.id
                 : `insert-${trainingModalState.index}`
             }
-            isOpen={!!trainingModalState}
             onClose={() => setTrainingModalState(null)}
             onSave={handleSaveBlock}
+            onDelete={handleDeleteBlock}
             mode={trainingModalState.mode}
             buttonImage={buttonImages[trainingModalState.blockType]}
             optional={trainingModalState.blockType === 0}
@@ -539,6 +595,19 @@ function App() {
           style={{ display: 'none' }}
           onChange={handleFileChange}
         />
+        {!!loopModalState && (
+          <LoopModal
+            onClose={() => setLoopModalState(null)}
+            onSave={handleSaveLoop}
+            onDelete={
+              loopModalState.mode === 'edit' ? handleDeleteLoop : undefined
+            }
+            mode={loopModalState.mode}
+            initialLoop={loopModalState.loop}
+            cursor={trainingData.cursor}
+            totalBlocks={trainingData.blocks.length}
+          />
+        )}
       </div>
       <Analytics />
       <SpeedInsights />

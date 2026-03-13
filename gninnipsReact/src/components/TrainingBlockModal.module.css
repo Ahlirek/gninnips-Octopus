@@ -163,7 +163,7 @@
     padding-top: 1.5rem;
 }
 
-.cancel, .insert {
+.cancel, .insert, .delete {
     padding: 0.6rem 2rem;
     border: none;
     border-radius: 4px;
@@ -194,6 +194,15 @@
 .insert:disabled, .cancel:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+.delete {
+  background: #dc3545;
+  color: white;
+}
+
+.delete:hover {
+  background: #c82333;
 }
 
 .blockOrderRow { 

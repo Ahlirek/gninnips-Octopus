@@ -5,9 +5,9 @@ import { useModalKeyboardEvents } from '../hooks/useModalKeyboardEvents';
 import { useState } from 'react';
 
 interface TrainingBlockModalProps {
-  isOpen: boolean;
   onClose: () => void;
   onSave: (block: TrainingBlock, position: number) => void;
+  onDelete: (index: number) => void;
   mode: 'insert' | 'edit';
   blockType: number;
   buttonImage?: HTMLImageElement | null;
@@ -68,9 +68,9 @@ function secondsToTime(seconds: number | undefined): string {
 }
 
 export default function TrainingBlockModal({
-  isOpen,
   onClose,
   onSave,
+  onDelete,
   mode,
   blockType,
   buttonImage,
@@ -262,6 +262,10 @@ export default function TrainingBlockModal({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  const handleDelete = () => {
+    onDelete(newIndex);
+    onClose();
+  };
 
   const handleSave = () => {
     if (!validate()) {
@@ -322,14 +326,10 @@ export default function TrainingBlockModal({
   };
 
   useModalKeyboardEvents({
-    isOpen,
+    isOpen: true,
     onClose,
     onConfirm: handleSave,
   });
-
-  if (!isOpen) {
-    return null;
-  }
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -532,6 +532,11 @@ export default function TrainingBlockModal({
         </div>
 
         <div className={styles.actions}>
+          {mode === 'edit' && (
+            <button onClick={handleDelete} className={styles.delete}>
+              Borrar Bloque
+            </button>
+          )}
           <button onClick={onClose} className={styles.cancel}>
             Cancelar
           </button>

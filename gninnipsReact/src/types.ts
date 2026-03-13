@@ -27,9 +27,11 @@ export interface JumpsBlock {
 export type TrainingBlock = NormalBlock | JumpsBlock;
 
 export interface Loop {
+  id: string;
   start: number;
   end: number;
   repetitions: number;
+  parentId: string | null;
 }
 
 export interface TrainingData {

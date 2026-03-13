@@ -1,7 +1,6 @@
 import styles from './PreviewArea.module.css';
 import { BlockText } from './BlockText';
-import type { TrainingBlock } from '../types';
-import type { TrainingData } from '../types';
+import type { TrainingData, TrainingBlock, Loop } from '../types';
 import { Stage, Layer, Image, Rect, Group } from 'react-konva';
 import Konva from 'konva';
 import { useRef, useState, useLayoutEffect, useMemo } from 'react';
@@ -18,12 +17,12 @@ interface PreviewAreaProps {
   onEditBlock?: (index: number, block: TrainingBlock) => void;
 }
 
+const COLS = 7;
+const ROWS = 4;
 const CELL_WIDTH = 540; // INFO: 429 ocupados max
 const CELL_HEIGHT = 460; //INFO: 420 ocupados
 const POSITION_IMAGE_SIZE = 270;
 const LOOP_FONT_SIZE = 500;
-const COLS = 7;
-const ROWS = 4;
 const TITLE_FONT_SIZE = 250;
 const INFO_FONT_SIZE = 90;
 const TITLE_PADDING = 30;
@@ -34,6 +33,7 @@ const IMAGE_MARGIN = (IMAGE_WIDTH - COLS * CELL_WIDTH) / 2;
 const IMAGE_BLOCKS_START_Y = IMAGE_HEIGHT - ROWS * CELL_HEIGHT - IMAGE_MARGIN;
 const TIME_COLOR = '#2563eb';
 const DISTANCE_COLOR = '#16a34a';
+const LOOP_COLORS = ['#ff0000', '#0000ff', '#008000', '#800080', '#ffa500'];
 
 function formatTime(seconds: number | undefined): string {
   if (!seconds) {
@@ -89,8 +89,8 @@ function getTextXCenteredInPositionImage(textWidth: number): number {
 function measureText(
   text: string,
   fontSize: number = FONT_SIZE,
-  fontFamily: string = FONT_FAMILY,
   fontStyle = FONT_STYLE,
+  fontFamily: string = FONT_FAMILY,
 ) {
   const temp = new Konva.Text({
     fontSize,
@@ -177,7 +177,6 @@ export default function PreviewArea({
       const offsetY = (height - scaledHeight) / 2;
       setOffset({ x: offsetX, y: offsetY });
 
-      console.log(width, height);
       setStageSize({ width, height });
     });
     resizeObserver.observe(divRef.current);
@@ -218,32 +217,17 @@ export default function PreviewArea({
       newBlocks[draggedIndex],
     ];
 
-    // El loop sigue a su bloque
-    const newLoops = data.loops.map((loop) => ({
-      start:
-        loop.start === draggedIndex
-          ? targetIndex
-          : loop.start === targetIndex
-            ? draggedIndex
-            : loop.start,
-      end:
-        loop.end === draggedIndex
-          ? targetIndex
-          : loop.end === targetIndex
-            ? draggedIndex
-            : loop.end,
-      repetitions: loop.repetitions,
-    }));
-    onDataChange({ ...data, blocks: newBlocks, loops: newLoops });
-
-    // onDataChange({ ...data, blocks: newBlocks });
+    onDataChange({ ...data, blocks: newBlocks });
 
     const newPos = getCellPosition(targetIndex);
     e.target.position(newPos);
   };
 
   const renderBlock = (block: TrainingBlock, index: number) => {
-    const { x, y } = getCellPosition(index);
+    const numLoopEndsBeforeBlock = data.loops.filter(
+      (loop) => loop.end < index,
+    ).length;
+    const { x, y } = getCellPosition(index + numLoopEndsBeforeBlock);
     const isJump = block.kind === 'jump';
     const img = buttonImages[block.type];
 
@@ -354,7 +338,10 @@ export default function PreviewArea({
     if (exportMode) {
       return null;
     }
-    const { x, y } = getCellPosition(data.cursor);
+    const numLoopEndsBeforeCursor = data.loops.filter(
+      (loop) => loop.end < data.cursor,
+    ).length;
+    const { x, y } = getCellPosition(data.cursor + numLoopEndsBeforeCursor);
     return (
       <Rect
         x={x}
@@ -370,33 +357,73 @@ export default function PreviewArea({
 
   const renderLoops = () => {
     return data.loops.map((loop, i) => {
-      const startPos = getCellPosition(loop.start);
-      const endPos = getCellPosition(loop.end);
-      const loopOpenBracketX = startPos.x - 50;
-      const loopClosingBracketX = endPos.x + CELL_WIDTH - 60;
-      const loopY = startPos.y - 50;
-      const startLoopText = '[';
-      const endLoopText = `]x${loop.repetitions}`;
-      //TODO: SI SON VARIOS LOOP HAY QUE MOVER EL X PARA QUE SE VEAN AMBOS
-      //TODO:un loop ocupa un espacio de cuadrito
+      const sameStartArrayReversed = data.loops
+        .filter((l) => l.start === loop.start)
+        .reverse();
+      const sameStartDepth = sameStartArrayReversed.findIndex(
+        (l) => l.id === loop.id,
+      );
+      const sameEndArray = data.loops.filter((l) => l.end === loop.end);
+      const sameEndBreadth = sameEndArray.findIndex((l) => l.id === loop.id);
+
+      const numLoopEndsBeforeLoopStart = data.loops.filter(
+        (l) => l.end < loop.start,
+      ).length;
+      const numLoopEndsBeforeLoopEnd = data.loops.filter(
+        (l) => l.end < loop.end,
+      ).length;
+
+      const startBlockIndex = loop.start + numLoopEndsBeforeLoopStart;
+      const endBlockIndex =
+        loop.end + numLoopEndsBeforeLoopEnd + sameEndBreadth;
+      const startPos = getCellPosition(startBlockIndex);
+      const endPos = getCellPosition(endBlockIndex);
+
+      const closingBracketSize = measureText(']', LOOP_FONT_SIZE, 'normal');
+      const offsetX = sameStartDepth * 15;
+      const offsetY = sameStartDepth * 15;
+      const color = LOOP_COLORS[i % LOOP_COLORS.length];
+      const centerLoopToCellY = 50;
+      const centerLoopEndToCellX = 60;
+      const isLineBreak = (endBlockIndex + 1) % 7 === 0;
+      const loopClosingBracketBaseX =
+        -centerLoopEndToCellX + closingBracketSize.width;
+      const loopClosingBracketBaseY = endPos.y - centerLoopToCellY + offsetY;
+      const loopClosingBracketLineBreakOffset = isLineBreak
+        ? {
+            x: IMAGE_MARGIN,
+            y: CELL_HEIGHT,
+          }
+        : {
+            x: endPos.x + CELL_WIDTH,
+            y: 0,
+          };
 
       return (
         <Group key={`loop-${i}`}>
           <BlockText
-            text={startLoopText}
-            x={loopOpenBracketX}
-            y={loopY}
+            text={'['}
+            x={startPos.x - 50 + offsetX}
+            y={startPos.y - centerLoopToCellY + offsetY}
             fontSize={LOOP_FONT_SIZE}
             fontStyle="normal"
-            fill="red"
+            fill={color}
           />
           <BlockText
-            text={endLoopText}
-            x={loopClosingBracketX}
-            y={loopY}
+            text={']'}
+            x={endPos.x + CELL_WIDTH - centerLoopEndToCellX}
+            y={endPos.y - centerLoopToCellY + offsetY}
             fontSize={LOOP_FONT_SIZE}
             fontStyle="normal"
-            fill="red"
+            fill={color}
+          />
+          <BlockText
+            text={`x${loop.repetitions}`}
+            x={loopClosingBracketBaseX + loopClosingBracketLineBreakOffset.x}
+            y={loopClosingBracketBaseY + loopClosingBracketLineBreakOffset.y}
+            fontSize={LOOP_FONT_SIZE}
+            fontStyle="normal"
+            fill={color}
           />
         </Group>
       );

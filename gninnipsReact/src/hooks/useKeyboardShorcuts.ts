@@ -4,6 +4,7 @@ export interface ShortcutConfig {
   [key: string]: {
     handler: () => void;
     options?: ShortcutConfigOptions;
+    disabled?: boolean;
   };
 }
 
@@ -36,24 +37,38 @@ export function useKeyboardShorcuts(
 
       const key = e.key.toLowerCase();
       const shortcut = shortcuts[key];
-      if (shortcut) {
-        const opts = shortcut.options || ({} as ShortcutConfigOptions);
 
-        const matchCtrl = opts.ctrl ?? false;
-        const matchAlt = opts.alt ?? false;
-        const matchShift = opts.shift ?? false;
-        const matchMeta = opts.meta ?? false;
-
-        if (e.ctrlKey !== matchCtrl) return;
-        if (e.altKey !== matchAlt) return;
-        if (e.shiftKey !== matchShift) return;
-        if (e.metaKey !== matchMeta) return;
-
-        if (opts.preventDefault !== false) {
-          e.preventDefault();
-        }
-        shortcut.handler();
+      if (!shortcut) {
+        return;
       }
+      if (shortcut.disabled) {
+        return;
+      }
+
+      const opts = shortcut.options || ({} as ShortcutConfigOptions);
+
+      const matchCtrl = opts.ctrl ?? false;
+      const matchAlt = opts.alt ?? false;
+      const matchShift = opts.shift ?? false;
+      const matchMeta = opts.meta ?? false;
+
+      if (e.ctrlKey !== matchCtrl) {
+        return;
+      }
+      if (e.altKey !== matchAlt) {
+        return;
+      }
+      if (e.shiftKey !== matchShift) {
+        return;
+      }
+      if (e.metaKey !== matchMeta) {
+        return;
+      }
+
+      if (opts.preventDefault !== false) {
+        e.preventDefault();
+      }
+      shortcut.handler();
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
