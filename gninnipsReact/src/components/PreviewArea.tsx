@@ -1,6 +1,6 @@
 import styles from './PreviewArea.module.css';
 import { BlockText } from './BlockText';
-import type { TrainingData, TrainingBlock, Loop } from '../types';
+import type { TrainingData, TrainingBlock } from '../types';
 import { Stage, Layer, Image, Rect, Group } from 'react-konva';
 import Konva from 'konva';
 import { useRef, useState, useLayoutEffect, useMemo } from 'react';
