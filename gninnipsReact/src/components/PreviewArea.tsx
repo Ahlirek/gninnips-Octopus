@@ -200,7 +200,11 @@ export default function PreviewArea({
   };
 
   const cellToBlock = useMemo(() => {
-    const map: (number | undefined)[] = new Array(COLS * ROWS).fill(undefined);
+    const mapSize = Math.max(
+      COLS * ROWS,
+      data.blocks.length + data.loops.length,
+    );
+    const map: (number | undefined)[] = new Array(mapSize).fill(undefined);
     data.blocks.forEach((_, idx) => {
       const cellIdx = idx + data.loops.filter((loop) => loop.end < idx).length;
       map[cellIdx] = idx;
