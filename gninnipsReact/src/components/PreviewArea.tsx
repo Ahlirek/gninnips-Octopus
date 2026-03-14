@@ -144,13 +144,20 @@ export default function PreviewArea({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   const { cumulativeTime, cumulativeDistance } = useMemo(() => {
+    const factors = new Array(data.blocks.length).fill(1);
+    data.loops.forEach((loop) => {
+      for (let i = loop.start; i <= loop.end; i++) {
+        factors[i] *= loop.repetitions;
+      }
+    });
+
     const cumTime: number[] = [];
     const cumDist: number[] = [];
     let timeSum = 0;
     let distSum = 0;
     data.blocks.forEach((block, idx) => {
-      timeSum += getBlockTime(block);
-      distSum += getBlockDistance(block);
+      timeSum += getBlockTime(block) * factors[idx];
+      distSum += getBlockDistance(block) * factors[idx];
       cumTime[idx] = timeSum;
       cumDist[idx] = distSum;
     });
@@ -158,7 +165,7 @@ export default function PreviewArea({
       cumulativeTime: cumTime,
       cumulativeDistance: cumDist,
     };
-  }, [data.blocks]);
+  }, [data.blocks, data.loops]);
 
   useLayoutEffect(() => {
     if (!divRef.current) {
@@ -251,7 +258,7 @@ export default function PreviewArea({
     const isJump = block.kind === 'jump';
     const img = buttonImages[block.type];
 
-    const { x: x2, y: y2 } = getCellPosition(index + 1);
+    const { x: x2, y: y2 } = getCellPositionForBlock(index + 1);
     const xNext = x2 - x;
     const yNext = y2 - y;
     let cumulativeText = '';
@@ -314,6 +321,9 @@ export default function PreviewArea({
     const timeDistTextSize = measureText(timeDistText);
     const timeDistX = getTextXCenteredInPositionImage(timeDistTextSize.width);
     const timeDistY = POS_IMAGE_OFFSET_Y + POSITION_IMAGE_SIZE;
+    const numberOfStartLoops = data.loops.filter(
+      (l) => l.start === index + 1,
+    ).length;
     if (index === data.blocks.length - 1) {
       cumulativeText = '';
     }
@@ -344,8 +354,8 @@ export default function PreviewArea({
         {isCumTimeDistVisible && (
           <BlockText
             text={cumulativeText}
-            x={xNext + 7}
-            y={yNext + 10}
+            x={xNext + 13 * numberOfStartLoops}
+            y={yNext + 13 * numberOfStartLoops}
             fontSize={CUMULATIVE_FONT_SIZE}
             fill={block.metric === 'time' ? TIME_COLOR : DISTANCE_COLOR}
           />
