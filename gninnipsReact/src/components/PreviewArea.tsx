@@ -129,7 +129,7 @@ const getBlockDistance = (block: TrainingBlock): number => {
 
 const expandSequence = (blocks: TrainingBlock[], loops: Loop[]): number[] => {
   const sortedLoops = [...loops].sort(
-    (a, b) => a.start - b.start || a.end - b.end,
+    (a, b) => a.start - b.start || b.end - a.end,
   );
   function expandRange(start: number, end: number): number[] {
     const result: number[] = [];
@@ -196,8 +196,6 @@ export default function PreviewArea({
       expandedBlocks,
     };
   }, [data.blocks, data.loops]);
-  console.log(cumulativeTime);
-  console.log(cumulativeDistance);
 
   useLayoutEffect(() => {
     if (!divRef.current) {
@@ -292,7 +290,6 @@ export default function PreviewArea({
 
     const beforeLastOccCumIndex = expandedBlocks.lastIndexOf(index) - 1;
     const beforeFirstOccCumIndex = expandedBlocks.indexOf(index) - 1;
-    console.log(beforeFirstOccCumIndex, beforeLastOccCumIndex, 'index');
     const foundExpBlock = beforeLastOccCumIndex !== -1 ? true : false;
 
     const beforeLastOccBlock =
@@ -302,8 +299,8 @@ export default function PreviewArea({
       data.blocks[expandedBlocks[Math.max(beforeFirstOccCumIndex, 0)]];
     const beforeFirstOccBlockIsJump = beforeFirstOccBlock.kind === 'jump';
 
-    let lastCumulativeText = '';
-    let firstCumulativeText = '';
+    let beforeLastOccCumulativeText = '';
+    let beforeFirstOccCumulativeText = '';
 
     if (foundExpBlock) {
       if (beforeLastOccBlockIsJump) {
@@ -312,12 +309,12 @@ export default function PreviewArea({
             beforeLastOccBlock.distanceUp) ||
           beforeLastOccBlock.distanceDown
         ) {
-          lastCumulativeText = formatDistance(
+          beforeLastOccCumulativeText = formatDistance(
             cumulativeDistance[beforeLastOccCumIndex],
           );
-          lastCumulativeText += lastCumulativeText ? 'k' : '';
+          beforeLastOccCumulativeText += beforeLastOccCumulativeText ? 'k' : '';
         } else if (beforeLastOccBlock.timeUp || beforeLastOccBlock.timeDown) {
-          lastCumulativeText = formatTime(
+          beforeLastOccCumulativeText = formatTime(
             cumulativeTime[beforeLastOccCumIndex],
           );
         }
@@ -326,12 +323,12 @@ export default function PreviewArea({
           beforeLastOccBlock.metric === 'distance' &&
           beforeLastOccBlock.distance
         ) {
-          lastCumulativeText = formatDistance(
+          beforeLastOccCumulativeText = formatDistance(
             cumulativeDistance[beforeLastOccCumIndex],
           );
-          lastCumulativeText += lastCumulativeText ? 'k' : '';
+          beforeLastOccCumulativeText += beforeLastOccCumulativeText ? 'k' : '';
         } else if (beforeLastOccBlock.time) {
-          lastCumulativeText = formatTime(
+          beforeLastOccCumulativeText = formatTime(
             cumulativeTime[beforeLastOccCumIndex],
           );
         }
@@ -343,12 +340,14 @@ export default function PreviewArea({
             beforeFirstOccBlock.distanceUp) ||
           beforeFirstOccBlock.distanceDown
         ) {
-          firstCumulativeText = formatDistance(
+          beforeFirstOccCumulativeText = formatDistance(
             cumulativeDistance[beforeFirstOccCumIndex],
           );
-          firstCumulativeText += firstCumulativeText ? 'k' : '';
+          beforeFirstOccCumulativeText += beforeFirstOccCumulativeText
+            ? 'k'
+            : '';
         } else if (beforeFirstOccBlock.timeUp || beforeFirstOccBlock.timeDown) {
-          firstCumulativeText = formatTime(
+          beforeFirstOccCumulativeText = formatTime(
             cumulativeTime[beforeFirstOccCumIndex],
           );
         }
@@ -357,12 +356,14 @@ export default function PreviewArea({
           beforeFirstOccBlock.metric === 'distance' &&
           beforeFirstOccBlock.distance
         ) {
-          firstCumulativeText = formatDistance(
+          beforeFirstOccCumulativeText = formatDistance(
             cumulativeDistance[beforeFirstOccCumIndex],
           );
-          firstCumulativeText += firstCumulativeText ? 'k' : '';
+          beforeFirstOccCumulativeText += beforeFirstOccCumulativeText
+            ? 'k'
+            : '';
         } else if (beforeFirstOccBlock.time) {
-          firstCumulativeText = formatTime(
+          beforeFirstOccCumulativeText = formatTime(
             cumulativeTime[beforeFirstOccCumIndex],
           );
         }
@@ -417,15 +418,23 @@ export default function PreviewArea({
       (l) => l.start === index,
     ).length;
     const lastCumulativeTextSize = measureText(
-      lastCumulativeText,
+      beforeLastOccCumulativeText,
       CUMULATIVE_FONT_SIZE,
     );
-    console.log(expandedBlocks, lastCumulativeText, firstCumulativeText);
+    console.log(
+      expandedBlocks,
+      beforeLastOccCumulativeText,
+      beforeFirstOccCumulativeText,
+    );
     if (index === data.blocks.length - 1) {
-      lastCumulativeText = '';
+      beforeLastOccCumulativeText = '';
     }
     const displayBothCumulativeTexts =
-      lastCumulativeText !== firstCumulativeText;
+      beforeLastOccCumulativeText !== beforeFirstOccCumulativeText;
+    const beforeFirstOccY =
+      displayBothCumulativeTexts && !!beforeLastOccCumulativeText
+        ? lastCumulativeTextSize.height
+        : 0;
 
     return (
       <Group
@@ -452,7 +461,7 @@ export default function PreviewArea({
         <BlockText text={timeDistText} x={timeDistX} y={timeDistY} />
         {isCumTimeDistVisible && (
           <BlockText
-            text={lastCumulativeText}
+            text={beforeLastOccCumulativeText}
             x={13 * numberOfStartLoops}
             y={13 * numberOfStartLoops}
             fontSize={CUMULATIVE_FONT_SIZE}
@@ -465,9 +474,9 @@ export default function PreviewArea({
         )}
         {isCumTimeDistVisible && displayBothCumulativeTexts && (
           <BlockText
-            text={firstCumulativeText}
+            text={beforeFirstOccCumulativeText}
             x={13 * numberOfStartLoops}
-            y={lastCumulativeTextSize.height + 13 * numberOfStartLoops}
+            y={13 * numberOfStartLoops + beforeFirstOccY}
             fontSize={CUMULATIVE_FONT_SIZE}
             fill={
               beforeFirstOccBlock.metric === 'time'
