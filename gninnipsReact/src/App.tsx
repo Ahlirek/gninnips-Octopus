@@ -24,13 +24,6 @@ function App() {
   const [isCumTimeDistVisible, setIsCumTimeDistVisible] = useState(true);
   const [exportMode, setExportMode] = useState(false);
 
-  // @ts-expect-error: suppressing unused variable for now
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
-    null,
-  );
-  // @ts-expect-error: suppressing unused variable for now
-  const [numberInputValue, setNumberInputValue] = useState<number | null>(null);
-
   const [isTitleModalOpen, setIsTitleModalOpen] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
@@ -92,8 +85,6 @@ function App() {
 
   const handleImageButtonClick = useCallback(
     (blockType: number) => {
-      console.log(`Selected image ${blockType + 1}`);
-      setSelectedImageIndex(blockType);
       setTrainingModalState({
         mode: 'insert',
         blockType,
@@ -105,10 +96,7 @@ function App() {
 
   const cannotEditBlockAndCreateLoop =
     trainingData.cursor >= trainingData.blocks.length;
-  // const canEditLoop = findLoopUnderCursor(
-  //   trainingData.cursor,
-  //   trainingData.loops,
-  // ); //TODO:
+
   const handleEditCurrent = useCallback(() => {
     const block = trainingData.blocks[trainingData.cursor];
     if (!block) {
@@ -427,6 +415,11 @@ function App() {
     },
     [],
   );
+  const canEditLoop = findLoopUnderCursor(
+    trainingData.cursor,
+    trainingData.loops,
+  );
+  console.log(canEditLoop, 'EDIT!');
 
   const handleEditLoopModal = useCallback(() => {
     const loopUnderCursor = findLoopUnderCursor(

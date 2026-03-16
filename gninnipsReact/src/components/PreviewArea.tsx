@@ -139,7 +139,6 @@ const expandSequence = (blocks: TrainingBlock[], loops: Loop[]): number[] => {
       if (loop) {
         const repBlocks = expandRange(i + 1, loop.end);
         for (let rep = 0; rep < loop.repetitions; rep++) {
-          console.log(i, repBlocks);
           result.push(i);
           result.push(...repBlocks);
         }
@@ -420,11 +419,6 @@ export default function PreviewArea({
     const lastCumulativeTextSize = measureText(
       beforeLastOccCumulativeText,
       CUMULATIVE_FONT_SIZE,
-    );
-    console.log(
-      expandedBlocks,
-      beforeLastOccCumulativeText,
-      beforeFirstOccCumulativeText,
     );
     if (index === data.blocks.length - 1) {
       beforeLastOccCumulativeText = '';
