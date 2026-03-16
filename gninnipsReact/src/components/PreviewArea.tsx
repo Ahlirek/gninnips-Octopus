@@ -420,8 +420,9 @@ export default function PreviewArea({
       beforeLastOccCumulativeText,
       CUMULATIVE_FONT_SIZE,
     );
-    if (index === data.blocks.length - 1) {
+    if (index === 0 || index === expandedBlocks.length - 1) {
       beforeLastOccCumulativeText = '';
+      beforeFirstOccCumulativeText = '';
     }
     const displayBothCumulativeTexts =
       beforeLastOccCumulativeText !== beforeFirstOccCumulativeText;
