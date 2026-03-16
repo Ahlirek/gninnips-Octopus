@@ -606,6 +606,7 @@ function App() {
             initialLoop={loopModalState.loop}
             cursor={trainingData.cursor}
             totalBlocks={trainingData.blocks.length}
+            existingLoops={trainingData.loops}
           />
         )}
       </div>

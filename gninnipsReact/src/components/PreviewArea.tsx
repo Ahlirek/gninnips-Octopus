@@ -1,6 +1,6 @@
 import styles from './PreviewArea.module.css';
 import { BlockText } from './BlockText';
-import type { TrainingData, TrainingBlock } from '../types';
+import type { TrainingData, TrainingBlock, Loop } from '../types';
 import { Stage, Layer, Image, Rect, Group } from 'react-konva';
 import Konva from 'konva';
 import { useRef, useState, useLayoutEffect, useMemo } from 'react';
@@ -31,8 +31,10 @@ const POS_IMAGE_OFFSET_Y = (CELL_HEIGHT - POSITION_IMAGE_SIZE) / 2;
 const POS_IMAGE_OFFSET_X = (CELL_WIDTH - POSITION_IMAGE_SIZE) * 0.72;
 const IMAGE_MARGIN = (IMAGE_WIDTH - COLS * CELL_WIDTH) / 2;
 const IMAGE_BLOCKS_START_Y = IMAGE_HEIGHT - ROWS * CELL_HEIGHT - IMAGE_MARGIN;
-const TIME_COLOR = '#2563eb';
-const DISTANCE_COLOR = '#16a34a';
+const LAST_CUM_TIME_COLOR = '#1a4bb8';
+const FIRST_CUM_TIME_COLOR = '#9bb7ff';
+const LAST_CUM_DISTANCE_COLOR = '#0f7a37';
+const FIRST_CUM_DISTANCE_COLOR = '#6fda94';
 const LOOP_COLORS = ['#ff0000', '#0000ff', '#008000', '#800080', '#ffa500'];
 
 function formatTime(seconds: number | undefined): string {
@@ -125,6 +127,37 @@ const getBlockDistance = (block: TrainingBlock): number => {
   }
 };
 
+const expandSequence = (blocks: TrainingBlock[], loops: Loop[]): number[] => {
+  const sortedLoops = [...loops].sort(
+    (a, b) => a.start - b.start || a.end - b.end,
+  );
+  function expandRange(start: number, end: number): number[] {
+    const result: number[] = [];
+    let i = start;
+    while (i <= end) {
+      const loop = sortedLoops.find((l) => l.start === i && l.end <= end);
+      if (loop) {
+        const repBlocks = expandRange(i + 1, loop.end);
+        for (let rep = 0; rep < loop.repetitions; rep++) {
+          console.log(i, repBlocks);
+          result.push(i);
+          result.push(...repBlocks);
+        }
+        i = loop.end;
+      } else {
+        result.push(i);
+      }
+      i++;
+    }
+    return result;
+  }
+
+  if (blocks.length === 0) {
+    return [];
+  }
+  return expandRange(0, blocks.length - 1);
+};
+
 export default function PreviewArea({
   data,
   onDataChange,
@@ -143,29 +176,28 @@ export default function PreviewArea({
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
-  const { cumulativeTime, cumulativeDistance } = useMemo(() => {
-    const factors = new Array(data.blocks.length).fill(1);
-    data.loops.forEach((loop) => {
-      for (let i = loop.start; i <= loop.end; i++) {
-        factors[i] *= loop.repetitions;
-      }
-    });
+  const { cumulativeTime, cumulativeDistance, expandedBlocks } = useMemo(() => {
+    const expandedBlocks = expandSequence(data.blocks, data.loops);
 
     const cumTime: number[] = [];
     const cumDist: number[] = [];
     let timeSum = 0;
     let distSum = 0;
-    data.blocks.forEach((block, idx) => {
-      timeSum += getBlockTime(block) * factors[idx];
-      distSum += getBlockDistance(block) * factors[idx];
+    const blocks = data.blocks;
+    expandedBlocks.forEach((expBlock, idx) => {
+      timeSum += getBlockTime(blocks[expBlock]);
+      distSum += getBlockDistance(blocks[expBlock]);
       cumTime[idx] = timeSum;
       cumDist[idx] = distSum;
     });
     return {
       cumulativeTime: cumTime,
       cumulativeDistance: cumDist,
+      expandedBlocks,
     };
   }, [data.blocks, data.loops]);
+  console.log(cumulativeTime);
+  console.log(cumulativeDistance);
 
   useLayoutEffect(() => {
     if (!divRef.current) {
@@ -258,10 +290,84 @@ export default function PreviewArea({
     const isJump = block.kind === 'jump';
     const img = buttonImages[block.type];
 
-    const { x: x2, y: y2 } = getCellPositionForBlock(index + 1);
-    const xNext = x2 - x;
-    const yNext = y2 - y;
-    let cumulativeText = '';
+    const beforeLastOccCumIndex = expandedBlocks.lastIndexOf(index) - 1;
+    const beforeFirstOccCumIndex = expandedBlocks.indexOf(index) - 1;
+    console.log(beforeFirstOccCumIndex, beforeLastOccCumIndex, 'index');
+    const foundExpBlock = beforeLastOccCumIndex !== -1 ? true : false;
+
+    const beforeLastOccBlock =
+      data.blocks[expandedBlocks[Math.max(beforeLastOccCumIndex, 0)]];
+    const beforeLastOccBlockIsJump = beforeLastOccBlock.kind === 'jump';
+    const beforeFirstOccBlock =
+      data.blocks[expandedBlocks[Math.max(beforeFirstOccCumIndex, 0)]];
+    const beforeFirstOccBlockIsJump = beforeFirstOccBlock.kind === 'jump';
+
+    let lastCumulativeText = '';
+    let firstCumulativeText = '';
+
+    if (foundExpBlock) {
+      if (beforeLastOccBlockIsJump) {
+        if (
+          (beforeLastOccBlock.metric === 'distance' &&
+            beforeLastOccBlock.distanceUp) ||
+          beforeLastOccBlock.distanceDown
+        ) {
+          lastCumulativeText = formatDistance(
+            cumulativeDistance[beforeLastOccCumIndex],
+          );
+          lastCumulativeText += lastCumulativeText ? 'k' : '';
+        } else if (beforeLastOccBlock.timeUp || beforeLastOccBlock.timeDown) {
+          lastCumulativeText = formatTime(
+            cumulativeTime[beforeLastOccCumIndex],
+          );
+        }
+      } else {
+        if (
+          beforeLastOccBlock.metric === 'distance' &&
+          beforeLastOccBlock.distance
+        ) {
+          lastCumulativeText = formatDistance(
+            cumulativeDistance[beforeLastOccCumIndex],
+          );
+          lastCumulativeText += lastCumulativeText ? 'k' : '';
+        } else if (beforeLastOccBlock.time) {
+          lastCumulativeText = formatTime(
+            cumulativeTime[beforeLastOccCumIndex],
+          );
+        }
+      }
+
+      if (beforeFirstOccBlockIsJump) {
+        if (
+          (beforeFirstOccBlock.metric === 'distance' &&
+            beforeFirstOccBlock.distanceUp) ||
+          beforeFirstOccBlock.distanceDown
+        ) {
+          firstCumulativeText = formatDistance(
+            cumulativeDistance[beforeFirstOccCumIndex],
+          );
+          firstCumulativeText += firstCumulativeText ? 'k' : '';
+        } else if (beforeFirstOccBlock.timeUp || beforeFirstOccBlock.timeDown) {
+          firstCumulativeText = formatTime(
+            cumulativeTime[beforeFirstOccCumIndex],
+          );
+        }
+      } else {
+        if (
+          beforeFirstOccBlock.metric === 'distance' &&
+          beforeFirstOccBlock.distance
+        ) {
+          firstCumulativeText = formatDistance(
+            cumulativeDistance[beforeFirstOccCumIndex],
+          );
+          firstCumulativeText += firstCumulativeText ? 'k' : '';
+        } else if (beforeFirstOccBlock.time) {
+          firstCumulativeText = formatTime(
+            cumulativeTime[beforeFirstOccCumIndex],
+          );
+        }
+      }
+    }
 
     const hrText = block.hr ? `${block.hr}%` : '';
     let numJumpsText = '';
@@ -276,33 +382,19 @@ export default function PreviewArea({
           block.distanceDown,
           block.metric,
         );
-        if (block.distanceUp || block.distanceDown) {
-          cumulativeText = formatDistance(cumulativeDistance[index]);
-          cumulativeText += cumulativeText ? 'k' : '';
-        }
       } else {
         timeDistText = formatUpDownValues(
           block.timeUp,
           block.timeDown,
           block.metric,
         );
-        if (block.timeUp || block.timeDown) {
-          cumulativeText = formatTime(cumulativeTime[index]);
-        }
       }
     } else {
       rpmText = `${block.rpm}`;
       if (block.metric === 'distance') {
         timeDistText = `${formatDistance(block.distance)}`;
-        if (block.distance) {
-          cumulativeText = formatDistance(cumulativeDistance[index]);
-          cumulativeText += cumulativeText ? 'k' : '';
-        }
       } else {
         timeDistText = formatTime(block.time);
-        if (block.time) {
-          cumulativeText = formatTime(cumulativeTime[index]);
-        }
       }
     }
 
@@ -322,11 +414,18 @@ export default function PreviewArea({
     const timeDistX = getTextXCenteredInPositionImage(timeDistTextSize.width);
     const timeDistY = POS_IMAGE_OFFSET_Y + POSITION_IMAGE_SIZE;
     const numberOfStartLoops = data.loops.filter(
-      (l) => l.start === index + 1,
+      (l) => l.start === index,
     ).length;
+    const lastCumulativeTextSize = measureText(
+      lastCumulativeText,
+      CUMULATIVE_FONT_SIZE,
+    );
+    console.log(expandedBlocks, lastCumulativeText, firstCumulativeText);
     if (index === data.blocks.length - 1) {
-      cumulativeText = '';
+      lastCumulativeText = '';
     }
+    const displayBothCumulativeTexts =
+      lastCumulativeText !== firstCumulativeText;
 
     return (
       <Group
@@ -353,11 +452,28 @@ export default function PreviewArea({
         <BlockText text={timeDistText} x={timeDistX} y={timeDistY} />
         {isCumTimeDistVisible && (
           <BlockText
-            text={cumulativeText}
-            x={xNext + 13 * numberOfStartLoops}
-            y={yNext + 13 * numberOfStartLoops}
+            text={lastCumulativeText}
+            x={13 * numberOfStartLoops}
+            y={13 * numberOfStartLoops}
             fontSize={CUMULATIVE_FONT_SIZE}
-            fill={block.metric === 'time' ? TIME_COLOR : DISTANCE_COLOR}
+            fill={
+              beforeLastOccBlock.metric === 'time'
+                ? LAST_CUM_TIME_COLOR
+                : LAST_CUM_DISTANCE_COLOR
+            }
+          />
+        )}
+        {isCumTimeDistVisible && displayBothCumulativeTexts && (
+          <BlockText
+            text={firstCumulativeText}
+            x={13 * numberOfStartLoops}
+            y={lastCumulativeTextSize.height + 13 * numberOfStartLoops}
+            fontSize={CUMULATIVE_FONT_SIZE}
+            fill={
+              beforeFirstOccBlock.metric === 'time'
+                ? FIRST_CUM_TIME_COLOR
+                : FIRST_CUM_DISTANCE_COLOR
+            }
           />
         )}
       </Group>
@@ -461,8 +577,8 @@ export default function PreviewArea({
   };
 
   const renderInfo = () => {
-    const totalTime = cumulativeTime[data.blocks.length - 1] || 0;
-    const totalDistance = cumulativeDistance[data.blocks.length - 1] || 0;
+    const totalTime = cumulativeTime[expandedBlocks.length - 1] || 0;
+    const totalDistance = cumulativeDistance[expandedBlocks.length - 1] || 0;
 
     const dateStr = data.date
       ? data.date.toLocaleDateString('es-MX', {

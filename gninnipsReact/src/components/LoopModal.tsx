@@ -12,6 +12,7 @@ interface LoopModalProps {
   initialLoop?: Loop;
   cursor: number;
   totalBlocks: number;
+  existingLoops: Loop[];
 }
 
 export default function LoopModal({
@@ -22,6 +23,7 @@ export default function LoopModal({
   initialLoop,
   cursor,
   totalBlocks,
+  existingLoops,
 }: LoopModalProps) {
   const [startPosition, setStartPosition] = useState(() => {
     if (mode === 'edit' && initialLoop) {
@@ -61,6 +63,32 @@ export default function LoopModal({
     if (!repetitions || repetitions < 2 || repetitions > 9) {
       newErrors.repetitions = 'Ingerse un número entre 2 y 9';
     }
+    for (const loop of existingLoops) {
+      if (mode === 'edit' && loop.id === initialLoop?.id) {
+        continue;
+      }
+
+      const existingStart = loop.start;
+      const existingEnd = loop.end;
+
+      if (startIndex === existingStart && endIndex === existingEnd) {
+        newErrors.overlap = 'Ya existe un ciclo con el mismo rango.';
+        break;
+      }
+
+      if (startIndex <= existingEnd && endIndex >= existingStart) {
+        const isNested =
+          (startIndex <= existingStart && endIndex >= existingEnd) ||
+          (existingStart <= startIndex && existingEnd >= endIndex);
+
+        if (!isNested) {
+          newErrors.overlap =
+            'El ciclo no puede superponerse parcialmente con otro ciclo.';
+          break;
+        }
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -143,6 +171,9 @@ export default function LoopModal({
           )}
         </div>
 
+        {errors.overlap && (
+          <span className={styles.error}>{errors.overlap}</span>
+        )}
         <div className={styles.actions}>
           <button onClick={onClose} className={styles.cancel}>
             Cancel

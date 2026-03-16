@@ -6,8 +6,8 @@ interface BlockTextProps {
   x?: number;
   y?: number;
   fontSize?: number;
-  fontFamily?: string;
   fontStyle?: string;
+  fontFamily?: string;
   fill?: string;
   width?: number;
   height?: number;
@@ -22,8 +22,8 @@ export function BlockText({
   x,
   y,
   fontSize = FONT_SIZE,
-  fontFamily = FONT_FAMILY,
   fontStyle = FONT_STYLE,
+  fontFamily = FONT_FAMILY,
   fill,
   width,
   height,
