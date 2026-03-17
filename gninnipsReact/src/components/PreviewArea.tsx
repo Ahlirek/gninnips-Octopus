@@ -424,12 +424,20 @@ export default function PreviewArea({
       beforeLastOccCumulativeText = '';
       beforeFirstOccCumulativeText = '';
     }
-    const displayBothCumulativeTexts =
+    const displayBeforeFirstOccCumText =
       beforeLastOccCumulativeText !== beforeFirstOccCumulativeText;
     const beforeFirstOccY =
-      displayBothCumulativeTexts && !!beforeLastOccCumulativeText
+      displayBeforeFirstOccCumText && !!beforeLastOccCumulativeText
         ? lastCumulativeTextSize.height
         : 0;
+    const beforeFirstOccColor =
+      displayBeforeFirstOccCumText && !!beforeLastOccCumulativeText
+        ? beforeFirstOccBlock.metric === 'time'
+          ? FIRST_CUM_TIME_COLOR
+          : FIRST_CUM_DISTANCE_COLOR
+        : beforeFirstOccBlock.metric === 'time'
+          ? LAST_CUM_TIME_COLOR
+          : LAST_CUM_DISTANCE_COLOR;
 
     return (
       <Group
@@ -467,17 +475,13 @@ export default function PreviewArea({
             }
           />
         )}
-        {isCumTimeDistVisible && displayBothCumulativeTexts && (
+        {isCumTimeDistVisible && displayBeforeFirstOccCumText && (
           <BlockText
             text={beforeFirstOccCumulativeText}
             x={13 * numberOfStartLoops}
             y={13 * numberOfStartLoops + beforeFirstOccY}
             fontSize={CUMULATIVE_FONT_SIZE}
-            fill={
-              beforeFirstOccBlock.metric === 'time'
-                ? FIRST_CUM_TIME_COLOR
-                : FIRST_CUM_DISTANCE_COLOR
-            }
+            fill={beforeFirstOccColor}
           />
         )}
       </Group>
