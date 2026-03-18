@@ -60,8 +60,8 @@ export default function LoopModal({
     if (!endPosition || endPosition < 1 || endPosition > totalBlocks) {
       newErrors.end = `El fin del ciclo debe estar entre 1 and ${totalBlocks}`;
     }
-    if (!repetitions || repetitions < 2 || repetitions > 99) {
-      newErrors.repetitions = 'El número de repeticiones debe ser entre 2 y 99';
+    if (!repetitions || repetitions < 2 || repetitions > 9) {
+      newErrors.repetitions = 'El número de repeticiones debe ser entre 2 y 9';
     }
     for (const loop of existingLoops) {
       if (mode === 'edit' && loop.id === initialLoop?.id) {
@@ -180,7 +180,7 @@ export default function LoopModal({
             <input
               type="number"
               min={2}
-              max={99}
+              max={9}
               value={repetitions}
               onChange={(e) => setRepetitions(parseInt(e.target.value))}
               className={errors.repetitions ? styles.inputError : ''}
