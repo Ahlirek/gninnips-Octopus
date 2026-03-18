@@ -448,7 +448,7 @@ export default function PreviewArea({
         onDragEnd={(e) => handleDragEnd(e, index)}
         onClick={() => onEditBlock?.(index, block)}
       >
-        <Rect width={CELL_WIDTH} height={CELL_HEIGHT} stroke="black" />
+        <Rect width={CELL_WIDTH} height={CELL_HEIGHT} /* stroke="black" */ />
         {img && (
           <Image
             image={img}

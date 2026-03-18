@@ -94,7 +94,7 @@ function App() {
     [trainingData.cursor],
   );
 
-  const cannotEditBlockAndCreateLoop =
+  const disableEditBlockAndCreateLoop =
     trainingData.cursor >= trainingData.blocks.length;
 
   const handleEditCurrent = useCallback(() => {
@@ -415,11 +415,10 @@ function App() {
     },
     [],
   );
-  const canEditLoop = findLoopUnderCursor(
+  const disableEditLoop = !findLoopUnderCursor(
     trainingData.cursor,
     trainingData.loops,
   );
-  console.log(canEditLoop, 'EDIT!');
 
   const handleEditLoopModal = useCallback(() => {
     const loopUnderCursor = findLoopUnderCursor(
@@ -515,7 +514,8 @@ function App() {
             onDownloadTraining={handleDownloadTraining}
             shorcutsDisabled={isAnyModalOpen}
             onEditCurrent={handleEditCurrent}
-            cannotEditBlockAndCreateLoop={cannotEditBlockAndCreateLoop}
+            disableEditBlockAndCreateLoop={disableEditBlockAndCreateLoop}
+            disableEditLoop={disableEditLoop}
           />
         </div>
 

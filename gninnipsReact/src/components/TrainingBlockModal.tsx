@@ -345,7 +345,7 @@ export default function TrainingBlockModal({
         <div className={styles.rpmRow}>
           {isJump ? (
             <>
-              <div className={styles.fieldGroup}>
+              <div className={`${modalStyles.fieldGroup} ${styles.fieldGroup}`}>
                 <label>RPM de pie</label>
                 <input
                   autoFocus
@@ -356,9 +356,9 @@ export default function TrainingBlockModal({
                   max={RPM_UPPER_LIMIT}
                   placeholder={`${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT}`}
                 />
-                <span className={styles.error}>{errors.rpmUp || ''}</span>
+                <span className={modalStyles.error}>{errors.rpmUp || ''}</span>
               </div>
-              <div className={styles.fieldGroup}>
+              <div className={`${modalStyles.fieldGroup} ${styles.fieldGroup}`}>
                 <label>RPM sentado</label>
                 <input
                   type="number"
@@ -368,11 +368,13 @@ export default function TrainingBlockModal({
                   max={RPM_UPPER_LIMIT}
                   placeholder={`${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT}`}
                 />
-                <span className={styles.error}>{errors.rpmDown || ''}</span>
+                <span className={modalStyles.error}>
+                  {errors.rpmDown || ''}
+                </span>
               </div>
             </>
           ) : (
-            <div className={styles.fieldGroup}>
+            <div className={`${modalStyles.fieldGroup} ${styles.fieldGroup}`}>
               <label>RPM</label>
               <input
                 autoFocus
@@ -383,14 +385,14 @@ export default function TrainingBlockModal({
                 max={RPM_UPPER_LIMIT}
                 placeholder={`${RPM_LOWER_LIMIT}-${RPM_UPPER_LIMIT}`}
               />
-              <span className={styles.error}>{errors.rpm || ''}</span>
+              <span className={modalStyles.error}>{errors.rpm || ''}</span>
             </div>
           )}
         </div>
 
         <div className={styles.middleRow}>
           <div className={styles.leftColumn}>
-            <div className={styles.fieldGroup}>
+            <div className={`${modalStyles.fieldGroup} ${styles.fieldGroup}`}>
               <label>HR%</label>
               <input
                 type="number"
@@ -398,7 +400,7 @@ export default function TrainingBlockModal({
                 onChange={(e) => setHr(e.target.value)}
                 placeholder={`${HR_LOWER_LIMIT}-${HR_UPPER_LIMIT}`}
               />
-              <span className={styles.error}>{errors.hr || ''}</span>
+              <span className={modalStyles.error}>{errors.hr || ''}</span>
             </div>
           </div>
 
@@ -416,7 +418,7 @@ export default function TrainingBlockModal({
 
           <div className={styles.rightColumn}>
             {isJump && (
-              <div className={styles.fieldGroup}>
+              <div className={`${modalStyles.fieldGroup} ${styles.fieldGroup}`}>
                 <label>Nº de saltos</label>
                 <input
                   type="number"
@@ -424,7 +426,7 @@ export default function TrainingBlockModal({
                   onChange={(e) => setJumps(e.target.value)}
                   placeholder="#"
                 />
-                <span className={styles.error}>{errors.jumps || ''}</span>
+                <span className={modalStyles.error}>{errors.jumps || ''}</span>
               </div>
             )}
           </div>
@@ -473,7 +475,7 @@ export default function TrainingBlockModal({
         <div className={styles.bottomRow}>
           {isJump ? (
             <>
-              <div className={styles.fieldGroup}>
+              <div className={`${modalStyles.fieldGroup} ${styles.fieldGroup}`}>
                 <label>
                   {metric === 'distance' ? 'Distancia de pie' : 'Tiempo de pie'}
                 </label>
@@ -482,11 +484,11 @@ export default function TrainingBlockModal({
                   onChange={(e) => setTimeDistValueUp(e.target.value)}
                   placeholder={metric === 'distance' ? 'km' : 'mm:ss'}
                 />
-                <span className={styles.error}>
+                <span className={modalStyles.error}>
                   {errors.timeDistValueUp || ''}
                 </span>
               </div>
-              <div className={styles.fieldGroup}>
+              <div className={`${modalStyles.fieldGroup} ${styles.fieldGroup}`}>
                 <label>
                   {metric === 'distance'
                     ? 'Distancia sentado'
@@ -497,26 +499,28 @@ export default function TrainingBlockModal({
                   onChange={(e) => setTimeDistValueDown(e.target.value)}
                   placeholder={metric === 'distance' ? 'km' : 'mm:ss'}
                 />
-                <span className={styles.error}>
+                <span className={modalStyles.error}>
                   {errors.timeDistValueDown || ''}
                 </span>
               </div>
             </>
           ) : (
-            <div className={styles.fieldGroup}>
+            <div className={`${modalStyles.fieldGroup} ${styles.fieldGroup}`}>
               <label>{metric === 'distance' ? 'Distancia' : 'Tiempo'}</label>
               <input
                 value={timeDistValue}
                 onChange={(e) => setTimeDistValue(e.target.value)}
                 placeholder={metric === 'distance' ? 'km' : 'mm:ss'}
               />
-              <span className={styles.error}>{errors.timeDistValue || ''}</span>
+              <span className={modalStyles.error}>
+                {errors.timeDistValue || ''}
+              </span>
             </div>
           )}
         </div>
 
         <div className={styles.blockOrderRow}>
-          <div className={styles.fieldGroup}>
+          <div className={`${modalStyles.fieldGroup} ${styles.fieldGroup}`}>
             <div className={styles.positionInline}>
               <label>Ubicación:</label>
               <input
@@ -527,20 +531,20 @@ export default function TrainingBlockModal({
                 max={maxPos}
               />
             </div>
-            <span className={styles.error}>{errors.position || ''}</span>
+            <span className={modalStyles.error}>{errors.position || ''}</span>
           </div>
         </div>
 
-        <div className={styles.actions}>
+        <div className={modalStyles.actions}>
           {mode === 'edit' && (
-            <button onClick={handleDelete} className={styles.delete}>
+            <button onClick={handleDelete} className={modalStyles.delete}>
               Borrar Bloque
             </button>
           )}
-          <button onClick={onClose} className={styles.cancel}>
+          <button onClick={onClose} className={modalStyles.cancel}>
             Cancelar
           </button>
-          <button onClick={handleSave} className={styles.insert}>
+          <button onClick={handleSave} className={modalStyles.insert}>
             Insertar
           </button>
         </div>

@@ -18,7 +18,8 @@ interface ControlsBarProps {
   onDownloadTraining: () => void;
   shorcutsDisabled: boolean;
   onEditCurrent: () => void;
-  cannotEditBlockAndCreateLoop: boolean;
+  disableEditBlockAndCreateLoop: boolean;
+  disableEditLoop: boolean;
 }
 
 const IMAGES_LENGTH = 10;
@@ -36,7 +37,6 @@ const LEFT_BUTTON_TEXT = 'Izquierda';
 const RIGHT_BUTTON_TEXT = 'Derecha';
 const LOAD_TRAINING_BUTTON_TEXT = 'Cargar Entrenamiento';
 const DOWNLOAD_TRAINING_BUTTON_TEXT = '[D]escargar Entrenamiento';
-const BUTTONS_CAN_BE_DISABLED = [EDIT_BUTTON_TEXT, CREATE_LOOP_BUTTON_TEXT];
 
 const emojisData = [
   ['␡', DELETE_BUTTON_TEXT, 'Retroceso'],
@@ -68,7 +68,8 @@ export default function ControlsBar({
   onDownloadTraining,
   shorcutsDisabled = false,
   onEditCurrent,
-  cannotEditBlockAndCreateLoop,
+  disableEditBlockAndCreateLoop,
+  disableEditLoop,
 }: ControlsBarProps) {
   const fechaButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -95,11 +96,11 @@ export default function ControlsBar({
         },
       },
       l: { handler: onOpenConfirmationModal },
-      r: { handler: onEditLoop, disabled: false },
+      r: { handler: onEditLoop, disabled: disableEditLoop },
       backspace: { handler: onDelete, options: { preventDefault: true } },
-      c: { handler: onCreateLoop, disabled: cannotEditBlockAndCreateLoop },
+      c: { handler: onCreateLoop, disabled: disableEditBlockAndCreateLoop },
       a: { handler: onCumTimeDist },
-      e: { handler: onEditCurrent, disabled: cannotEditBlockAndCreateLoop },
+      e: { handler: onEditCurrent, disabled: disableEditBlockAndCreateLoop },
       arrowleft: { handler: onLeft, options: { preventDefault: true } },
       arrowright: { handler: onRight, options: { preventDefault: true } },
       u: { handler: onLoadTraining },
@@ -175,11 +176,22 @@ export default function ControlsBar({
         text: `Posición [${displayIndex}]`,
         key: `img-${index}`,
         title: `Shorcut: ${displayIndex}`,
+        disabled: false,
       };
     }
 
     const emojiIndex = Math.max(0, index - IMAGES_LENGTH);
     const currentEmoji = emojisData[emojiIndex];
+    let buttonDisabled = false;
+    switch (currentEmoji[1]) {
+      case EDIT_LOOP_BUTTON_TEXT:
+        buttonDisabled = disableEditLoop;
+        break;
+      case EDIT_BUTTON_TEXT:
+      case CREATE_LOOP_BUTTON_TEXT:
+        buttonDisabled = disableEditBlockAndCreateLoop;
+        break;
+    }
 
     return {
       type: 'emoji',
@@ -187,6 +199,7 @@ export default function ControlsBar({
       text: currentEmoji[1],
       key: `emoji-${index}`,
       title: `Shorcut: ${currentEmoji[2]}`,
+      disabled: buttonDisabled,
     };
   });
 
@@ -204,10 +217,7 @@ export default function ControlsBar({
             data-button-text={el.text}
             onClick={() => handleButtonClick(index, el.type, el.text)}
             title={el.title}
-            disabled={
-              BUTTONS_CAN_BE_DISABLED.includes(el.text) &&
-              cannotEditBlockAndCreateLoop
-            }
+            disabled={el.disabled}
             {...(el.text === DATE_BUTTON_TEXT ? { ref: fechaButtonRef } : {})}
           />
         );
