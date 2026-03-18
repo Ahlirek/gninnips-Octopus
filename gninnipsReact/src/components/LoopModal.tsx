@@ -3,7 +3,6 @@ import styles from './LoopModal.module.css';
 import { useState } from 'react';
 import { useModalKeyboardEvents } from '../hooks/useModalKeyboardEvents';
 import type { Loop } from '../types';
-import NumberInputButton from './NumberInputButton';
 
 interface LoopModalProps {
   onClose: () => void;
