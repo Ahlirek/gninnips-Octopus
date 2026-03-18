@@ -35,7 +35,7 @@ const CUM_TIME_DIST_BUTTON_TEXT = '[A]ccumulado';
 const EDIT_BUTTON_TEXT = '[E]dit';
 const LEFT_BUTTON_TEXT = 'Izquierda';
 const RIGHT_BUTTON_TEXT = 'Derecha';
-const LOAD_TRAINING_BUTTON_TEXT = 'Cargar Entrenamiento';
+const LOAD_TRAINING_BUTTON_TEXT = '[S]ubir Entrenamiento';
 const DOWNLOAD_TRAINING_BUTTON_TEXT = '[D]escargar Entrenamiento';
 
 const emojisData = [
@@ -49,7 +49,7 @@ const emojisData = [
   ['✏️', EDIT_BUTTON_TEXT, 'E'],
   ['⬅️', LEFT_BUTTON_TEXT, 'Flecha Izquierda'],
   ['➡️', RIGHT_BUTTON_TEXT, 'Flecha Derecha'],
-  ['📎', LOAD_TRAINING_BUTTON_TEXT, 'U'],
+  ['📎', LOAD_TRAINING_BUTTON_TEXT, 'S'],
   ['💾', DOWNLOAD_TRAINING_BUTTON_TEXT, 'D'],
 ];
 
@@ -103,7 +103,7 @@ export default function ControlsBar({
       e: { handler: onEditCurrent, disabled: disableEditBlockAndCreateLoop },
       arrowleft: { handler: onLeft, options: { preventDefault: true } },
       arrowright: { handler: onRight, options: { preventDefault: true } },
-      u: { handler: onLoadTraining },
+      s: { handler: onLoadTraining },
       d: { handler: onDownloadTraining },
     },
     shorcutsDisabled,
