@@ -1,0 +1,173 @@
+{
+  "blocks": [
+    {
+      "id": "1772648233753",
+      "kind": "normal",
+      "type": 1,
+      "hr": 80,
+      "metric": "time",
+      "rpm": 80,
+      "time": 60
+    },
+    {
+      "id": "1772648328102",
+      "kind": "jump",
+      "type": 7,
+      "hr": 85,
+      "metric": "distance",
+      "rpmUp": 88,
+      "rpmDown": 60,
+      "jumps": 3,
+      "distanceUp": 0.5,
+      "distanceDown": 0.25
+    },
+    {
+      "id": "1772648251123",
+      "kind": "normal",
+      "type": 3,
+      "hr": 60,
+      "metric": "time",
+      "rpm": 60,
+      "time": 120
+    },
+    {
+      "id": "1772648275631",
+      "kind": "normal",
+      "type": 4,
+      "hr": 55,
+      "metric": "distance",
+      "rpm": 60,
+      "distance": 2
+    },
+    {
+      "id": "1772648294052",
+      "kind": "jump",
+      "type": 5,
+      "hr": 70,
+      "metric": "time",
+      "rpmUp": 60,
+      "rpmDown": 66,
+      "jumps": 5,
+      "timeUp": 10,
+      "timeDown": 30
+    },
+    {
+      "id": "1772648305724",
+      "kind": "normal",
+      "type": 6,
+      "hr": 50,
+      "metric": "distance",
+      "rpm": 110,
+      "distance": 3
+    },
+    {
+      "id": "1772648242695",
+      "kind": "normal",
+      "type": 2,
+      "hr": 90,
+      "metric": "distance",
+      "rpm": 90,
+      "distance": 2
+    },
+    {
+      "id": "1772648351402",
+      "kind": "normal",
+      "type": 8,
+      "hr": 90,
+      "metric": "time",
+      "rpm": 115,
+      "time": 600
+    },
+    {
+      "id": "1772648364330",
+      "kind": "normal",
+      "type": 9,
+      "hr": 55,
+      "metric": "time",
+      "rpm": 70,
+      "time": 300
+    },
+    {
+      "id": "1772648370358",
+      "kind": "jump",
+      "type": 0,
+      "hr": null,
+      "metric": "time",
+      "rpmUp": null,
+      "rpmDown": null,
+      "jumps": null,
+      "timeUp": null,
+      "timeDown": null
+    },
+    {
+      "id": "1772648386888",
+      "kind": "jump",
+      "type": 0,
+      "hr": 90,
+      "metric": "time",
+      "rpmUp": 120,
+      "rpmDown": 120,
+      "jumps": 8,
+      "timeUp": 601,
+      "timeDown": 601
+    },
+    {
+      "id": "1772648392601",
+      "kind": "jump",
+      "type": 0,
+      "hr": null,
+      "metric": "time",
+      "rpmUp": null,
+      "rpmDown": null,
+      "jumps": null,
+      "timeUp": null,
+      "timeDown": null
+    },
+    {
+      "kind": "jump",
+      "type": 0,
+      "metric": "time",
+      "id": "1773075697554"
+    }
+  ],
+  "loops": [
+    {
+      "id": "1773855787682",
+      "start": 1,
+      "end": 1,
+      "repetitions": 2,
+      "parentId": null
+    },
+    {
+      "id": "1773855791350",
+      "start": 3,
+      "end": 3,
+      "repetitions": 2,
+      "parentId": "1773855794923"
+    },
+    {
+      "id": "1773855777036",
+      "start": 12,
+      "end": 12,
+      "repetitions": 2,
+      "parentId": null
+    },
+    {
+      "id": "1773855794923",
+      "start": 2,
+      "end": 3,
+      "repetitions": 2,
+      "parentId": null
+    },
+    {
+      "id": "1773855783525",
+      "start": 8,
+      "end": 11,
+      "repetitions": 2,
+      "parentId": null
+    }
+  ],
+  "cursor": 2,
+  "date": "2026-03-18T18:16:19.000Z",
+  "title": "This is a title"
+}
