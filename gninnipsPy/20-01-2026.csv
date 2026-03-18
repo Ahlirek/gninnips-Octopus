@@ -1,0 +1,10 @@
+T,
+H,20/01/2026
+Comando,% 100,Cadencia 000/000,Tiempo Total 00:00,Tiempo Saltos 00/00,Distancia/Tiempo
+1,85,100,0:2,-,T
+1,75,85,1:0,-,T
+I
+10,-,-,-,-,D
+11,-,-,55,-,D
+12,85,-,0:22,-,T
+F,1
