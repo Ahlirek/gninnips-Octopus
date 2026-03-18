@@ -260,9 +260,9 @@ function App() {
         if (prev.blocks.length === 0) {
           return prev;
         }
-        const cursorOrLastElement =
+        const cursorPosOrLastBlockPos =
           prev.cursor === prev.blocks.length ? prev.cursor - 1 : prev.cursor;
-        const blockIndexToDelete = index ?? cursorOrLastElement;
+        const blockIndexToDelete = index ?? cursorPosOrLastBlockPos;
         const newBlocks = prev.blocks.filter(
           (_, i) => i !== blockIndexToDelete,
         );
@@ -274,7 +274,9 @@ function App() {
             end: loop.end > blockIndexToDelete ? loop.end - 1 : loop.end,
             repetitions: loop.repetitions,
           }))
-          .filter((loop) => loop.start <= loop.end);
+          .filter(
+            (loop) => loop.start <= loop.end && loop.end < newBlocks.length,
+          );
         const loopsWithParents = recomputeLoopParents(newLoops);
         const newCursor = Math.min(prev.cursor, newBlocks.length);
         return {
