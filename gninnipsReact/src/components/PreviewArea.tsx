@@ -420,7 +420,7 @@ export default function PreviewArea({
       beforeLastOccCumulativeText,
       CUMULATIVE_FONT_SIZE,
     );
-    if (index === 0 || index === expandedBlocks.length - 1) {
+    if (index === 0 || index === expandedBlocks.length) {
       beforeLastOccCumulativeText = '';
       beforeFirstOccCumulativeText = '';
     }
